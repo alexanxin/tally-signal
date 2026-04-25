@@ -9,6 +9,17 @@ const RPC_URL =
 const MIN_BALANCE =
   parseFloat(process.env.SIGNAL_MIN_BALANCE ?? "0.5");
 
+// Payment amount required per signal call (on-chain settlement)
+const PAYMENT_AMOUNT =
+  parseFloat(process.env.SIGNAL_PAYMENT_AMOUNT ?? "0.1");
+
+// The burner wallet that receives USDC payments. If not set, the server
+// falls back to session-balance verification only (proof-of-authorization mode).
+const PAYMENT_WALLET = process.env.SIGNAL_PAYMENT_WALLET ?? "";
+
+// How old a payment tx can be (seconds) — prevents replay attacks
+const TX_MAX_AGE_S = parseInt(process.env.SIGNAL_TX_MAX_AGE ?? "120");
+
 const IS_DEVNET =
   RPC_URL.toLowerCase().includes("devnet") ||
   RPC_URL.toLowerCase().includes("dev.");
@@ -143,27 +154,143 @@ async function generateSignal() {
 }
 
 // ---------------------------------------------------------------------------
+// On-chain payment verification
+// ---------------------------------------------------------------------------
+async function verifyPaymentTx(txSig: string, expectedDestination: string, minAmount: number): Promise<{
+  valid: boolean;
+  reason?: string;
+  amount?: number;
+}> {
+  const body = {
+    jsonrpc: "2.0",
+    id: 1,
+    method: "getTransaction",
+    params: [
+      txSig,
+      { encoding: "jsonParsed", commitment: "confirmed", maxSupportedTransactionVersion: 0 },
+    ],
+  };
+
+  const res = await fetch(RPC_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+    cache: "no-store",
+  });
+
+  if (!res.ok) return { valid: false, reason: "RPC request failed" };
+
+  const data = await res.json() as {
+    result?: {
+      blockTime?: number;
+      meta?: { err: unknown };
+      transaction?: {
+        message?: {
+          instructions?: Array<{
+            parsed?: {
+              type?: string;
+              info?: {
+                destination?: string;
+                amount?: string;
+                mint?: string;
+              };
+            };
+          }>;
+        };
+      };
+    };
+  };
+
+  const tx = data?.result;
+  if (!tx) return { valid: false, reason: "Transaction not found or not yet confirmed" };
+  if (tx.meta?.err) return { valid: false, reason: "Transaction failed on-chain" };
+
+  // Replay check: reject if tx is older than TX_MAX_AGE_S seconds
+  const blockTime = tx.blockTime ?? 0;
+  const nowS = Math.floor(Date.now() / 1000);
+  if (nowS - blockTime > TX_MAX_AGE_S) {
+    return { valid: false, reason: `Transaction too old (${nowS - blockTime}s, max ${TX_MAX_AGE_S}s)` };
+  }
+
+  // Find a token transfer instruction to our payment wallet
+  const instructions = tx.transaction?.message?.instructions ?? [];
+  for (const ix of instructions) {
+    const parsed = ix.parsed;
+    if (
+      parsed?.type === "transferChecked" || parsed?.type === "transfer"
+    ) {
+      const info = parsed.info ?? {};
+      const dest = info.destination ?? "";
+      const mint = info.mint ?? "";
+      const rawAmount = parseInt(info.amount ?? "0", 10);
+      const uiAmount = rawAmount / 1_000_000; // USDC = 6 decimals
+
+      // Accept if destination ATA belongs to our payment wallet
+      // (The ATA address won't match PAYMENT_WALLET directly — we check
+      // by querying whose ATA this is, or we accept any transfer that
+      // arrives at the correct USDC ATA we verified on setup)
+      // Simplified: trust the destination matches the known payment wallet ATA
+      if (mint === USDC_MINT && uiAmount >= minAmount) {
+        // Verify destination is an ATA owned by PAYMENT_WALLET
+        const isOurWallet = await isAtaOwnedBy(dest, expectedDestination);
+        if (isOurWallet) {
+          return { valid: true, amount: uiAmount };
+        }
+      }
+    }
+  }
+
+  return { valid: false, reason: "No qualifying USDC transfer to payment wallet found in transaction" };
+}
+
+async function isAtaOwnedBy(ataAddress: string, ownerAddress: string): Promise<boolean> {
+  const body = {
+    jsonrpc: "2.0",
+    id: 1,
+    method: "getAccountInfo",
+    params: [ataAddress, { encoding: "jsonParsed" }],
+  };
+  const res = await fetch(RPC_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+    cache: "no-store",
+  });
+  if (!res.ok) return false;
+  const data = await res.json() as {
+    result?: { value?: { data?: { parsed?: { info?: { owner?: string } } } } };
+  };
+  const owner = data?.result?.value?.data?.parsed?.info?.owner ?? "";
+  return owner === ownerAddress;
+}
+
+// ---------------------------------------------------------------------------
 // 402 response helpers
 // ---------------------------------------------------------------------------
 function paymentRequired(extra?: Record<string, unknown>) {
+  const headers: Record<string, string> = {
+    "X-Payment-Required": "tally",
+    "X-Payment-Amount": String(PAYMENT_AMOUNT),
+    "X-Payment-Currency": "USDC",
+  };
+  if (PAYMENT_WALLET) {
+    headers["X-Payment-Wallet"] = PAYMENT_WALLET;
+  }
+
   return NextResponse.json(
     {
       error: "payment_required",
-      message: "This endpoint requires a funded Tally session wallet.",
-      amount: MIN_BALANCE,
+      message: "This endpoint requires on-chain USDC payment to the Tally signal wallet.",
+      payment_amount: PAYMENT_AMOUNT,
+      min_session_balance: MIN_BALANCE,
       currency: "USDC",
-      how_to_pay:
-        "Fund a session wallet via the Tally app, then retry with header: X-Tally-Session: <pubkey>",
+      payment_wallet: PAYMENT_WALLET || null,
+      how_to_pay: PAYMENT_WALLET
+        ? `Send ${PAYMENT_AMOUNT} USDC to ${PAYMENT_WALLET}, then retry with headers: X-Tally-Session: <pubkey> and X-Tally-Tx: <tx_signature>`
+        : "Fund a session wallet via the Tally app, then retry with header: X-Tally-Session: <pubkey>",
       ...extra,
     },
-    {
-      status: 402,
-      headers: {
-        "X-Payment-Required": "tally",
-        "X-Payment-Amount": String(MIN_BALANCE),
-        "X-Payment-Currency": "USDC",
-      },
-    }
+    { status: 402, headers }
   );
 }
 
@@ -172,19 +299,64 @@ function paymentRequired(extra?: Record<string, unknown>) {
 // ---------------------------------------------------------------------------
 export async function GET(req: NextRequest) {
   const sessionPubkey =
-    req.headers.get("x-tally-session") ??
+    (req.headers.get("x-tally-session") ??
     req.nextUrl.searchParams.get("session") ??
-    "";
+    "").trim();
+
+  const txSig =
+    (req.headers.get("x-tally-tx") ??
+    req.nextUrl.searchParams.get("tx") ??
+    "").trim();
 
   // ── No session header → 402 ───────────────────────────────────────────────
-  if (!sessionPubkey.trim()) {
+  if (!sessionPubkey) {
     return paymentRequired();
   }
 
-  // ── Session header present → verify on-chain balance ─────────────────────
+  // ── On-chain settlement mode: verify payment tx ───────────────────────────
+  if (PAYMENT_WALLET) {
+    if (!txSig) {
+      return paymentRequired({
+        error: "tx_required",
+        message: `Send ${PAYMENT_AMOUNT} USDC to ${PAYMENT_WALLET} and retry with X-Tally-Tx: <tx_signature>`,
+      });
+    }
+
+    let txResult: { valid: boolean; reason?: string; amount?: number };
+    try {
+      txResult = await verifyPaymentTx(txSig, PAYMENT_WALLET, PAYMENT_AMOUNT);
+    } catch {
+      return NextResponse.json(
+        { error: "rpc_error", message: "Could not verify payment transaction. Try again." },
+        { status: 503 }
+      );
+    }
+
+    if (!txResult.valid) {
+      return paymentRequired({
+        error: "invalid_payment",
+        message: txResult.reason ?? "Payment transaction could not be verified.",
+        tx: txSig,
+      });
+    }
+
+    // Payment verified — generate and return signal
+    const signal = await generateSignal();
+    return NextResponse.json({
+      ok: true,
+      session: sessionPubkey,
+      payment_tx: txSig,
+      payment_amount: txResult.amount,
+      settlement: "on_chain",
+      signal,
+    });
+  }
+
+  // ── Proof-of-authorization mode (no PAYMENT_WALLET set) ──────────────────
+  // Verify the session wallet has sufficient balance as authorization proof.
   let balance: number;
   try {
-    balance = await getUsdcBalance(sessionPubkey.trim());
+    balance = await getUsdcBalance(sessionPubkey);
   } catch {
     return NextResponse.json(
       { error: "rpc_error", message: "Could not verify session balance. Try again." },
@@ -202,15 +374,12 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  // ── Balance OK → fetch signal (price + generation run in parallel with
-  //    balance check above via Promise.all at call site if needed; here
-  //    balance is already confirmed so we just await the signal)
   const signal = await generateSignal();
-
   return NextResponse.json({
     ok: true,
     session: sessionPubkey,
     balance: +balance.toFixed(4),
+    settlement: "proof_of_authorization",
     signal,
   });
 }
