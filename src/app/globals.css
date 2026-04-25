@@ -1,0 +1,16 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0a0a0a;
+  --bg2: #111;
+  --border: rgba(255,255,255,0.08);
+  --green: #84cc16;
+  --green-dim: rgba(132,204,22,0.15);
+  --red: #ef4444;
+  --red-dim: rgba(239,68,68,0.12);
+  --text: #e5e5e5;
+  --muted: rgba(229,229,229,0.45);
+  --mono: "JetBrains Mono", "Fira Code", "Courier New", monospace;
+}
+
+html, body { background: var(--bg); color: var(--text); font-family: var(--mono); min-height: 100vh; }
