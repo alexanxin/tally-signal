@@ -18,7 +18,7 @@ const PAYMENT_AMOUNT =
 const PAYMENT_WALLET = process.env.SIGNAL_PAYMENT_WALLET ?? "";
 
 // How old a payment tx can be (seconds) — prevents replay attacks
-const TX_MAX_AGE_S = parseInt(process.env.SIGNAL_TX_MAX_AGE ?? "120");
+const TX_MAX_AGE_S = parseInt(process.env.SIGNAL_TX_MAX_AGE ?? "300");
 
 const IS_DEVNET =
   RPC_URL.toLowerCase().includes("devnet") ||
@@ -215,9 +215,13 @@ async function verifyPaymentTx(txSig: string, expectedDestination: string, minAm
           parsed?: {
             type?: string;
             info?: {
+              // transferChecked fields
               destination?: string;
-              amount?: string;
               mint?: string;
+              tokenAmount?: { uiAmount?: number; amount?: string };
+              // transfer fields (no mint — SPL transfer without check)
+              amount?: string;
+              source?: string;
             };
           };
         }>;
@@ -233,38 +237,56 @@ async function verifyPaymentTx(txSig: string, expectedDestination: string, minAm
     return { valid: false, reason: `Transaction too old (${nowS - blockTime}s, max ${TX_MAX_AGE_S}s)` };
   }
 
-  // Find a token transfer instruction to our payment wallet
+  // Find a qualifying SPL token transfer to the payment wallet.
+  //
+  // Two instruction types to handle:
+  //   "transferChecked" — includes mint + tokenAmount.uiAmount
+  //   "transfer"        — no mint field; amount is raw lamports (6 decimals for USDC)
+  //
+  // For plain "transfer" we verify the destination ATA belongs to our payment
+  // wallet AND that the ATA's mint is USDC — this covers the mint check without
+  // relying on the instruction's info object having a mint field.
   const instructions = tx.transaction?.message?.instructions ?? [];
   for (const ix of instructions) {
     const parsed = ix.parsed;
-    if (
-      parsed?.type === "transferChecked" || parsed?.type === "transfer"
-    ) {
-      const info = parsed.info ?? {};
-      const dest = info.destination ?? "";
-      const mint = info.mint ?? "";
-      const rawAmount = parseInt(info.amount ?? "0", 10);
-      const uiAmount = rawAmount / 1_000_000; // USDC = 6 decimals
+    if (!parsed) continue;
 
-      // Accept if destination ATA belongs to our payment wallet
-      // (The ATA address won't match PAYMENT_WALLET directly — we check
-      // by querying whose ATA this is, or we accept any transfer that
-      // arrives at the correct USDC ATA we verified on setup)
-      // Simplified: trust the destination matches the known payment wallet ATA
-      if (mint === USDC_MINT && uiAmount >= minAmount) {
-        // Verify destination is an ATA owned by PAYMENT_WALLET
-        const isOurWallet = await isAtaOwnedBy(dest, expectedDestination);
-        if (isOurWallet) {
-          return { valid: true, amount: uiAmount };
-        }
-      }
+    const info = parsed.info ?? {};
+    const dest = info.destination ?? "";
+    if (!dest) continue;
+
+    let uiAmount = 0;
+
+    if (parsed.type === "transferChecked") {
+      // mint is present — verify it's USDC before checking amount
+      if (info.mint !== USDC_MINT) continue;
+      uiAmount = info.tokenAmount?.uiAmount ??
+        (parseInt(info.tokenAmount?.amount ?? "0", 10) / 1_000_000);
+
+    } else if (parsed.type === "transfer") {
+      // No mint in info — derive amount, verify mint via ATA account info below
+      uiAmount = parseInt(info.amount ?? "0", 10) / 1_000_000;
+
+    } else {
+      continue;
     }
+
+    if (uiAmount < minAmount) continue;
+
+    // Verify destination ATA is owned by the expected payment wallet
+    // and (for plain transfer) that its mint is USDC
+    const ataInfo = await getAtaInfo(dest);
+    if (!ataInfo) continue;
+    if (ataInfo.owner !== expectedDestination) continue;
+    if (ataInfo.mint !== USDC_MINT) continue;
+
+    return { valid: true, amount: uiAmount };
   }
 
   return { valid: false, reason: "No qualifying USDC transfer to payment wallet found in transaction" };
 }
 
-async function isAtaOwnedBy(ataAddress: string, ownerAddress: string): Promise<boolean> {
+async function getAtaInfo(ataAddress: string): Promise<{ owner: string; mint: string } | null> {
   const body = {
     jsonrpc: "2.0",
     id: 1,
@@ -277,12 +299,13 @@ async function isAtaOwnedBy(ataAddress: string, ownerAddress: string): Promise<b
     body: JSON.stringify(body),
     cache: "no-store",
   });
-  if (!res.ok) return false;
+  if (!res.ok) return null;
   const data = await res.json() as {
-    result?: { value?: { data?: { parsed?: { info?: { owner?: string } } } } };
+    result?: { value?: { data?: { parsed?: { info?: { owner?: string; mint?: string } } } } };
   };
-  const owner = data?.result?.value?.data?.parsed?.info?.owner ?? "";
-  return owner === ownerAddress;
+  const info = data?.result?.value?.data?.parsed?.info;
+  if (!info?.owner || !info?.mint) return null;
+  return { owner: info.owner, mint: info.mint };
 }
 
 // ---------------------------------------------------------------------------
