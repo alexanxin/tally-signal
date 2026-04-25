@@ -1,5 +1,10 @@
 {
   "framework": "nextjs",
   "buildCommand": "next build",
-  "outputDirectory": ".next"
+  "outputDirectory": ".next",
+  "functions": {
+    "src/app/api/signal/route.ts": {
+      "maxDuration": 25
+    }
+  }
 }

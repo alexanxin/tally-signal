@@ -156,11 +156,16 @@ async function generateSignal() {
 // ---------------------------------------------------------------------------
 // On-chain payment verification
 // ---------------------------------------------------------------------------
-async function verifyPaymentTx(txSig: string, expectedDestination: string, minAmount: number): Promise<{
-  valid: boolean;
-  reason?: string;
-  amount?: number;
-}> {
+
+// Solana tx propagation can lag a few seconds between the agent's RPC node
+// confirming and Vercel's RPC node seeing it. We poll up to TX_POLL_ATTEMPTS
+// times with TX_POLL_DELAY_MS between each attempt before giving up.
+const TX_POLL_ATTEMPTS = 4;
+const TX_POLL_DELAY_MS = 2000;
+
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+async function fetchTransaction(txSig: string) {
   const body = {
     jsonrpc: "2.0",
     id: 1,
@@ -170,39 +175,55 @@ async function verifyPaymentTx(txSig: string, expectedDestination: string, minAm
       { encoding: "jsonParsed", commitment: "confirmed", maxSupportedTransactionVersion: 0 },
     ],
   };
-
   const res = await fetch(RPC_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
     cache: "no-store",
   });
+  if (!res.ok) return null;
+  const data = await res.json() as { result?: unknown };
+  return data?.result ?? null;
+}
 
-  if (!res.ok) return { valid: false, reason: "RPC request failed" };
+async function verifyPaymentTx(txSig: string, expectedDestination: string, minAmount: number): Promise<{
+  valid: boolean;
+  reason?: string;
+  amount?: number;
+}> {
+  // Poll until the tx is visible on this RPC node (handles propagation lag)
+  let rawTx: unknown = null;
+  for (let attempt = 0; attempt < TX_POLL_ATTEMPTS; attempt++) {
+    rawTx = await fetchTransaction(txSig);
+    if (rawTx !== null) break;
+    if (attempt < TX_POLL_ATTEMPTS - 1) await sleep(TX_POLL_DELAY_MS);
+  }
 
-  const data = await res.json() as {
-    result?: {
-      blockTime?: number;
-      meta?: { err: unknown };
-      transaction?: {
-        message?: {
-          instructions?: Array<{
-            parsed?: {
-              type?: string;
-              info?: {
-                destination?: string;
-                amount?: string;
-                mint?: string;
-              };
+  if (!rawTx) {
+    return {
+      valid: false,
+      reason: `Transaction ${txSig.slice(0, 8)}... not found after ${TX_POLL_ATTEMPTS} attempts (${(TX_POLL_ATTEMPTS * TX_POLL_DELAY_MS / 1000).toFixed(0)}s). RPC propagation may still be in progress — retry in a few seconds.`,
+    };
+  }
+
+  const tx = rawTx as {
+    blockTime?: number;
+    meta?: { err: unknown };
+    transaction?: {
+      message?: {
+        instructions?: Array<{
+          parsed?: {
+            type?: string;
+            info?: {
+              destination?: string;
+              amount?: string;
+              mint?: string;
             };
-          }>;
-        };
+          };
+        }>;
       };
     };
   };
-
-  const tx = data?.result;
-  if (!tx) return { valid: false, reason: "Transaction not found or not yet confirmed" };
   if (tx.meta?.err) return { valid: false, reason: "Transaction failed on-chain" };
 
   // Replay check: reject if tx is older than TX_MAX_AGE_S seconds
