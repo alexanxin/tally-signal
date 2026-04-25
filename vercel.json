@@ -1,0 +1,9 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "next build",
+  "outputDirectory": ".next",
+  "env": {
+    "SOLANA_RPC_URL": "@solana_rpc_url",
+    "SIGNAL_MIN_BALANCE": "@signal_min_balance"
+  }
+}
