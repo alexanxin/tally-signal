@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tally — Opening...</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0a;
+      color: #e5e5e5;
+      font-family: 'Courier New', monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      gap: 20px;
+      padding: 20px;
+      text-align: center;
+    }
+    .logo { font-size: 2rem; font-weight: 800; letter-spacing: 6px; color: #84cc16; }
+    .subtitle { font-size: 0.7rem; letter-spacing: 3px; opacity: 0.4; text-transform: uppercase; }
+    .status { font-size: 0.8rem; opacity: 0.6; }
+    .open-btn {
+      margin-top: 12px;
+      padding: 14px 28px;
+      background: #84cc16;
+      color: #000;
+      font-family: 'Courier New', monospace;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      display: none; /* only shown if auto-redirect fails */
+    }
+  </style>
+</head>
+<body>
+  <div class="logo">TALLY</div>
+  <div class="subtitle">Physical API Key</div>
+  <div class="status" id="status">Opening authorization request…</div>
+  <a class="open-btn" id="openBtn">Open Tally</a>
+
+  <script>
+    // Build the tally:// deep link from the current query string
+    const params = window.location.search; // e.g. ?amount=5&pubkey=xxx&currency=USDC
+    const deepLink = 'tally://auth' + params;
+
+    const btn = document.getElementById('openBtn');
+    btn.href = deepLink;
+
+    // Attempt auto-redirect
+    window.location.replace(deepLink);
+
+    // Fallback: if still on this page after 1.5s, show manual button
+    setTimeout(() => {
+      document.getElementById('status').textContent =
+        'Tap the button below if the app did not open automatically.';
+      btn.style.display = 'inline-block';
+    }, 1500);
+  </script>
+</body>
+</html>
