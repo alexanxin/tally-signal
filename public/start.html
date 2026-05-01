@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tally — Card as Key</title>
+  <meta name="description" content="Your card was the key. Card tap replaces the private key. A Solana wallet where any contactless card is the signing key. Live on mainnet. Built for AI agents." />
+  <meta property="og:title" content="Tally — Your card is the key." />
+  <meta property="og:description" content="Solana wallet. Bank card as signing key. x402 live on mainnet." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;0,800;0,900;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      /* backgrounds */
+      --bg:         #0b0f14;
+      --bg-card:    #111820;
+      --bg-raised:  #161e28;
+      --bg-inset:   #0d1520;
+
+      /* borders */
+      --border:       rgba(74, 222, 128, 0.18);
+      --border-dim:   rgba(74, 222, 128, 0.07);
+      --border-ui:    rgba(255, 255, 255, 0.07);
+
+      /* brand */
+      --green:        #4ade80;
+      --green-dim:    rgba(74, 222, 128, 0.09);
+      --green-glow:   rgba(74, 222, 128, 0.28);
+      --teal:         #2dd4bf;
+      --red:          #f87171;
+      --amber:        #fbbf24;
+
+      /* text — all pass WCAG AA on --bg */
+      --text:         #f0f4f8;   /* headings / primary */
+      --text-body:    #b0bec5;   /* body copy — 5.8:1 contrast */
+      --text-meta:    #78909c;   /* labels, timestamps — 4.6:1 */
+      --text-ghost:   #4a5568;   /* decorative only, never body */
+
+      /* type */
+      --display: 'DM Sans', system-ui, sans-serif;
+      --sans: 'Inter', system-ui, sans-serif;
+      --mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+      /* sizing */
+      --max-w: 1040px;
+      --radius: 2px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      background: var(--bg);
+      color: var(--text-body);
+      font-family: var(--sans);
+      font-size: 1rem;
+      line-height: 1.6;
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* atmospheric teal glow — matches app bg */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 90% 55% at 50% -5%, rgba(10, 38, 44, 0.95) 0%, transparent 55%),
+        radial-gradient(ellipse 40% 35% at 85% 65%, rgba(8, 28, 34, 0.45) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* subtle grid overlay */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(74, 222, 128, 0.022) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(74, 222, 128, 0.022) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrap {
+      position: relative;
+      z-index: 1;
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    /* ─────────── NAV ─────────── */
+    nav {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 32px;
+      max-width: var(--max-w);
+      margin: 0 auto;
+      border-bottom: 1px solid var(--border-dim);
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--mono);
+      font-weight: 700;
+      font-size: 0.9rem;
+      letter-spacing: 5px;
+      color: var(--green);
+    }
+
+    .nav-logo-icon {
+      width: 64px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      padding-right: 10px;
+      margin-left: 10px;
+    }
+
+    .nav-right { display: flex; align-items: center; gap: 24px; }
+
+    .nav-status {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 1.5px;
+      color: var(--text-meta);
+      text-transform: uppercase;
+    }
+
+    .status-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+      animation: pulse 2.4s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; box-shadow: 0 0 8px var(--green); }
+      50%       { opacity: 0.5; box-shadow: 0 0 3px var(--green); }
+    }
+
+    .nav-link {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.5px;
+      color: var(--text-meta);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .nav-link:hover { color: var(--green); }
+
+    /* ─────────── HERO ─────────── */
+    .hero {
+      padding: 80px 0 56px;
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 56px;
+      align-items: center;
+      animation: fadeUp 0.55s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--green);
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      margin-bottom: 32px;
+      background: var(--green-dim);
+    }
+
+    .hero-headline {
+      font-family: var(--display);
+      font-weight: 800;
+      font-size: clamp(2rem, 3.8vw, 3.1rem);
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      margin-bottom: 24px;
+    }
+
+    .hero-headline em {
+      font-style: normal;
+      color: var(--green);
+    }
+
+    .hero-subline {
+      font-family: var(--display);
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--green);
+      letter-spacing: -0.01em;
+      margin-bottom: 28px;
+    }
+
+    .hero-blurb {
+      max-width: 460px;
+      margin-bottom: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .hero-blurb p {
+      font-family: var(--sans);
+      font-size: 0.92rem;
+      font-weight: 400;
+      color: var(--text-body);
+      line-height: 1.75;
+    }
+
+    .hero-blurb p:first-child {
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+
+    .hero-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--green);
+      color: #000;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 14px 24px;
+      text-decoration: none;
+      transition: box-shadow 0.2s, transform 0.15s;
+    }
+    .btn-primary:hover {
+      box-shadow: 0 0 32px var(--green-glow);
+      transform: translateY(-1px);
+    }
+
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--border);
+      color: var(--text-body);
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 14px 24px;
+      text-decoration: none;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-ghost:hover { border-color: var(--green); color: var(--green); }
+
+    /* ─────────── ENTROPY WIDGET ─────────── */
+    .entropy-widget {
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      position: relative;
+      overflow: hidden;
+      animation: fadeUp 0.55s 0.1s ease both;
+    }
+
+    .entropy-widget::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 90% 70% at 50% 15%, rgba(10, 55, 45, 0.55) 0%, transparent 65%);
+      pointer-events: none;
+    }
+
+    .ew-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-dim);
+    }
+
+    .ew-title {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 3px;
+      color: var(--green);
+      text-transform: uppercase;
+    }
+
+    .ew-title-icon {
+      width: 40px; height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-right: 10px;
+      margin-left: 10px;
+    }
+
+    .ew-gear {
+      width: 24px; height: 24px;
+      border: 1.5px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      animation: spin 9s linear infinite;
+      color: var(--text-meta);
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .ew-body {
+      padding: 18px 16px 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .ew-corner-stats {
+      position: absolute;
+      top: 22px; right: 14px;
+      text-align: right;
+    }
+    .ew-corner-label {
+      font-family: var(--mono);
+      font-size: 0.5rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-ghost);
+      line-height: 1.4;
+    }
+    .ew-corner-val {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--text-meta);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .ew-line-top {
+      width: 1px; height: 18px;
+      background: linear-gradient(to bottom, transparent, var(--green));
+    }
+
+    .ew-shard-label {
+      font-family: var(--mono);
+      font-size: 0.55rem;
+      letter-spacing: 2px;
+      color: var(--text-meta);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .ew-shard-card {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: rgba(10, 38, 30, 0.65);
+      padding: 16px 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .ew-fingerprint {
+      font-size: 3rem;
+      line-height: 1;
+      animation: flicker 3.5s ease-in-out infinite;
+    }
+    @keyframes flicker {
+      0%, 100% { opacity: 0.75; }
+      45%       { opacity: 0.4; }
+      70%       { opacity: 0.95; }
+    }
+
+    .ew-network {
+      position: relative;
+      width: 44px; height: 44px;
+    }
+    .ew-node {
+      position: absolute;
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 6px var(--green);
+    }
+    .ew-node.center { top: 50%; left: 50%; transform: translate(-50%,-50%); width: 9px; height: 9px; }
+    .ew-node.top    { top: 3px; left: 50%; transform: translateX(-50%); }
+    .ew-node.bottom { bottom: 3px; left: 50%; transform: translateX(-50%); }
+    .ew-node.left   { left: 3px; top: 50%; transform: translateY(-50%); }
+    .ew-node.right  { right: 3px; top: 50%; transform: translateY(-50%); }
+
+    .ew-card-icon { font-size: 2.8rem; line-height: 1; opacity: 0.65; }
+
+    .ew-line-bottom {
+      width: 1px; height: 18px;
+      background: linear-gradient(to bottom, var(--green), rgba(130,100,255,0.4));
+    }
+
+    .ew-progress-label {
+      font-family: var(--mono);
+      font-size: 0.58rem;
+      letter-spacing: 1.5px;
+      color: var(--green);
+      text-transform: uppercase;
+      align-self: flex-start;
+      margin-bottom: 6px;
+      margin-top: 4px;
+    }
+
+    .ew-progress-bar {
+      width: 100%;
+      height: 2px;
+      background: rgba(74, 222, 128, 0.12);
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+    .ew-progress-fill {
+      height: 100%;
+      background: var(--green);
+      box-shadow: 0 0 6px var(--green);
+      animation: progressAnim 3.2s ease-in-out infinite;
+    }
+    @keyframes progressAnim {
+      0%   { width: 0%; }
+      68%  { width: 100%; }
+      88%  { width: 100%; }
+      100% { width: 0%; }
+    }
+
+    .ew-status-grid {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border-dim);
+      border: 1px solid var(--border-dim);
+      margin-bottom: 10px;
+    }
+    .ew-status-cell {
+      background: var(--bg-raised);
+      padding: 10px 12px;
+    }
+    .ew-cell-label {
+      font-family: var(--mono);
+      font-size: 0.52rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-ghost);
+      margin-bottom: 4px;
+    }
+    .ew-cell-value {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--text-body);
+      font-weight: 500;
+      line-height: 1.4;
+    }
+    .ew-cell-value.green { color: var(--green); }
+
+    .ew-warning {
+      width: 100%;
+      border-left: 3px solid var(--red);
+      background: rgba(248, 113, 113, 0.05);
+      padding: 10px 12px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .ew-warning-icon { font-size: 0.85rem; flex-shrink: 0; color: var(--amber); margin-top: 1px; }
+    .ew-warning-title {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: 3px;
+    }
+    .ew-warning-text {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      line-height: 1.55;
+      color: var(--text-meta);
+    }
+
+    /* ─────────── CURL SECTION ─────────── */
+    .curl-section {
+      padding: 0 0 80px;
+    }
+
+    .curl-label {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 1px;
+      color: var(--text-meta);
+      margin-bottom: 12px;
+    }
+
+    .curl-block {
+      display: flex;
+      align-items: stretch;
+      border: 1px solid var(--border);
+      background: var(--bg-inset);
+      overflow: hidden;
+      width: 100%;
+    }
+
+    .curl-prompt {
+      padding: 16px 18px;
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      color: var(--green);
+      border-right: 1px solid var(--border-dim);
+      user-select: none;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+    }
+
+    .curl-cmd {
+      padding: 16px 18px;
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      color: var(--text);
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: flex;
+      align-items: center;
+    }
+
+    .curl-copy {
+      padding: 16px 18px;
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-meta);
+      cursor: pointer;
+      border-left: 1px solid var(--border-dim);
+      background: none;
+      border-top: none;
+      border-right: none;
+      border-bottom: none;
+      transition: color 0.15s, background 0.15s;
+      white-space: nowrap;
+    }
+    .curl-copy:hover { color: var(--green); background: var(--green-dim); }
+    .curl-copy.copied { color: var(--green); }
+
+    .curl-note {
+      margin-top: 10px;
+      font-size: 0.88rem;
+      color: var(--text-meta);
+      line-height: 1.5;
+    }
+
+    /* ─────────── DIVIDERS ─────────── */
+    .section-divider {
+      border: none;
+      border-top: 1px solid var(--border-dim);
+      margin: 0;
+    }
+
+    /* ─────────── SECTION HEADINGS ─────────── */
+    .section-label {
+      font-family: var(--display);
+      font-size: clamp(1.6rem, 2.8vw, 2.2rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      margin-bottom: 40px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .section-label::before {
+      content: '';
+      width: 5px;
+      height: 1em;
+      background: var(--green);
+      border-radius: 1px;
+      flex-shrink: 0;
+    }
+
+    /* ─────────── HOW IT WORKS ─────────── */
+    .how-section { padding: 88px 0 80px; }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border-dim);
+      border: 1px solid var(--border-dim);
+    }
+
+    .step { background: var(--bg-card); padding: 32px 28px; }
+
+    .step-num {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      color: var(--text-ghost);
+      margin-bottom: 18px;
+      text-transform: uppercase;
+    }
+
+    .step-icon { font-size: 1.6rem; margin-bottom: 14px; display: block; }
+
+    .step-title {
+      font-family: var(--display);
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 12px;
+      letter-spacing: -0.01em;
+      line-height: 1.3;
+    }
+
+    .step-desc {
+      font-size: 0.9rem;
+      line-height: 1.7;
+      color: var(--text-body);
+    }
+    .step-desc strong { color: var(--green); font-weight: 600; }
+    .step-desc code {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      color: var(--green);
+      background: var(--green-dim);
+      padding: 1px 5px;
+    }
+
+    /* ─────────── MAINNET PROOF ─────────── */
+    .proof-section { padding: 0 0 88px; }
+
+    .proof-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1px;
+      background: var(--border-dim);
+      border: 1px solid var(--border-dim);
+    }
+
+    .proof-item {
+      background: var(--bg-card);
+      padding: 24px 28px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+
+    .proof-check {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--green);
+      margin-top: 3px;
+      flex-shrink: 0;
+      font-weight: 700;
+    }
+
+    .proof-text {
+      font-size: 0.9rem;
+      color: var(--text-body);
+      line-height: 1.6;
+    }
+    .proof-text strong {
+      font-family: var(--sans);
+      color: var(--text);
+      display: block;
+      font-weight: 600;
+      margin-bottom: 3px;
+      font-size: 0.95rem;
+    }
+
+    /* ─────────── TECH STACK ─────────── */
+    .stack-section { padding: 0 0 88px; }
+
+    .stack-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1px;
+      background: var(--border-dim);
+      border: 1px solid var(--border-dim);
+    }
+
+    .stack-item {
+      background: var(--bg-card);
+      padding: 20px 28px;
+      display: flex;
+      align-items: baseline;
+      gap: 20px;
+    }
+
+    .stack-layer {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-meta);
+      min-width: 80px;
+      flex-shrink: 0;
+      font-weight: 500;
+    }
+
+    .stack-detail {
+      font-size: 0.88rem;
+      color: var(--text-body);
+      line-height: 1.5;
+    }
+    .stack-detail a {
+      color: var(--green);
+      text-decoration: none;
+    }
+    .stack-detail a:hover { text-decoration: underline; }
+
+    /* ─────────── FOOTER CTA ─────────── */
+    .footer-cta {
+      padding: 80px 0 64px;
+      text-align: center;
+      border-top: 1px solid var(--border-dim);
+    }
+
+    .footer-cta-headline {
+      font-family: var(--display);
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      margin-bottom: 16px;
+      line-height: 1.15;
+    }
+    .footer-cta-headline em { font-style: normal; color: var(--green); }
+
+    .footer-cta-sub {
+      font-size: 1rem;
+      color: var(--text-body);
+      margin-bottom: 36px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.6;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 28px;
+      flex-wrap: wrap;
+      margin-top: 52px;
+      padding-top: 32px;
+      border-top: 1px solid var(--border-dim);
+    }
+
+    .footer-link {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-meta);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .footer-link:hover { color: var(--green); }
+
+    .footer-built {
+      margin-top: 24px;
+      font-size: 0.78rem;
+      color: var(--text-ghost);
+      letter-spacing: 0.5px;
+    }
+
+    /* ─────────── RESPONSIVE ─────────── */
+    @media (max-width: 860px) {
+      .hero { grid-template-columns: 1fr; gap: 48px; padding: 60px 0 48px; }
+      .entropy-widget { max-width: 480px; }
+      .hero-blurb { max-width: 100%; }
+    }
+    @media (max-width: 640px) {
+      .wrap { padding: 0 20px; }
+      nav { padding: 16px 20px; }
+      .nav-logo-icon img { width: 48px; height: 24px; }
+      .nav-logo-icon { width: 48px; height: 24px; }
+      .nav-logo { font-size: 0.8rem; gap: 8px; }
+      .steps { grid-template-columns: 1fr; }
+      .proof-grid { grid-template-columns: 1fr; }
+      .stack-grid { grid-template-columns: 1fr; }
+      .hero-headline { font-size: 2.4rem; }
+      .hero-subline { font-size: 1rem; }
+      .hero-blurb p { font-size: 0.88rem; }
+      .hero-blurb { max-width: 100%; }
+      .curl-block { font-size: 0.72rem; }
+      .section-heading { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo">
+      <div class="nav-logo-icon"><img src="logo.png" alt="Tally" style="width:64px;height:32px;object-fit:contain;" /></div>
+      TALLY
+    </div>
+    <div class="nav-right">
+      <div class="nav-status">
+        <div class="status-dot"></div>
+        Mainnet Live
+      </div>
+      <a class="nav-link" href="https://github.com/alexanxin/tally-vault" target="_blank">GitHub ↗</a>
+    </div>
+  </nav>
+
+  <div class="wrap">
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-left">
+        <div class="hero-tag">Solana · NFC · x402</div>
+        <h1 class="hero-headline">
+          Your card<br>
+          is the key.
+        </h1>
+        <p class="hero-subline">Tap your card, no passwords, no keys.</p>
+        <div class="hero-blurb">
+          <p>Every crypto wallet has the same problem. The private key lives somewhere, and wherever it lives is the attack surface. Hardware wallets solved custody but created friction. You need a device. You have to carry it. Lose it and you're locked out.</p>
+          <p>The card in your wallet already has an NFC chip. Tally reads it via full EMV APDU chain, runs it through Argon2id with your biometric, and derives a signing key in RAM. Under 500ms, then it wipes. Nothing persists on any server, ever. Any contactless card works, including expired ones.</p>
+          <p>We built this for AI agents, where the private key problem is worse. An agent gets a funded session wallet per task, authorized by a card tap. The vault key never leaves the device. The session key has a budget cap, and when the task ends, funds sweep back automatically. x402 micropayments are live on Solana mainnet. The physical card is the only thing that can authorize a spend.</p>
+        </div>
+        <div class="hero-actions">
+          <a class="btn-primary" href="https://github.com/alexanxin/tally-vault" target="_blank">View Repo ↗</a>
+          <a class="btn-ghost" href="#x402">Live Demo</a>
+        </div>
+      </div>
+
+      <!-- ENTROPY ENGINE WIDGET -->
+      <div class="entropy-widget">
+        <div class="ew-header">
+          <div class="ew-title">
+            <div class="ew-title-icon"><img src="logo.png" alt="Tally" style="width:40px;height:20px;object-fit:contain;" /></div>
+            TALLY
+          </div>
+          <div class="ew-gear">⚙</div>
+        </div>
+
+        <div class="ew-body">
+          <div class="ew-corner-stats">
+            <div class="ew-corner-label">UPTIME</div>
+            <div class="ew-corner-val" id="uptime">00:00:00</div>
+          </div>
+
+          <div class="ew-line-top"></div>
+          <div class="ew-shard-label">BIO_STREAM.SHRD</div>
+
+          <div class="ew-shard-card">
+            <div class="ew-fingerprint">🫆</div>
+            <div class="ew-network">
+              <div class="ew-node center"></div>
+              <div class="ew-node top"></div>
+              <div class="ew-node bottom"></div>
+              <div class="ew-node left"></div>
+              <div class="ew-node right"></div>
+              <svg width="44" height="44" style="position:absolute;top:0;left:0;pointer-events:none;">
+                <line x1="22" y1="22" x2="22" y2="7"  stroke="#4ade80" stroke-width="1" opacity="0.3"/>
+                <line x1="22" y1="22" x2="22" y2="37" stroke="#4ade80" stroke-width="1" opacity="0.3"/>
+                <line x1="22" y1="22" x2="7"  y2="22" stroke="#4ade80" stroke-width="1" opacity="0.3"/>
+                <line x1="22" y1="22" x2="37" y2="22" stroke="#4ade80" stroke-width="1" opacity="0.3"/>
+              </svg>
+            </div>
+            <div class="ew-card-icon">💳</div>
+          </div>
+
+          <div class="ew-shard-label" style="margin-top:6px;">CARD_STREAM.SHRD</div>
+          <div class="ew-line-bottom"></div>
+
+          <div class="ew-progress-label" id="progress-label">RECONSTRUCTING SOLANA MASTER KEY...</div>
+          <div class="ew-progress-bar">
+            <div class="ew-progress-fill"></div>
+          </div>
+
+          <div class="ew-status-grid">
+            <div class="ew-status-cell">
+              <div class="ew-cell-label">PROTOCOL</div>
+              <div class="ew-cell-value">ISO/IEC 14443-4<br>Detected</div>
+            </div>
+            <div class="ew-status-cell">
+              <div class="ew-cell-label">STATE</div>
+              <div class="ew-cell-value green" id="entropy-state">Entropy Extraction:<br>100%</div>
+            </div>
+            <div class="ew-status-cell">
+              <div class="ew-cell-label">TARGET ADDRESS</div>
+              <div class="ew-cell-value" id="target-addr" style="font-size:0.68rem;">7xPq...9Wk2</div>
+            </div>
+            <div class="ew-status-cell">
+              <div class="ew-cell-label">ENCRYPTION</div>
+              <div class="ew-cell-value green">Argon2id · XOR · Ed25519</div>
+            </div>
+          </div>
+
+          <div class="ew-warning">
+            <div class="ew-warning-icon">⚠</div>
+            <div>
+              <div class="ew-warning-title">Security Warning</div>
+              <div class="ew-warning-text">Volatile RAM Only. No Persistence. Any interruption will purge the cache.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CURL BLOCK -->
+    <section class="curl-section" id="x402">
+      <div class="curl-label">// Live x402 endpoint. Run it yourself.</div>
+      <div class="curl-block">
+        <div class="curl-prompt">$</div>
+        <div class="curl-cmd">curl https://tally.lll.mk/api/signal</div>
+        <button class="curl-copy" id="copyBtn" onclick="copyCurl()">Copy</button>
+      </div>
+      <p class="curl-note">You'll get a 402 with the payment wallet in the response. That's the x402 protocol in action. An agent sends 0.1 USDC to that address, retries with the tx signature, and gets the signal back. The whole flow is in <a href="https://github.com/alexanxin/tally-vault/tree/main/tally_integration" target="_blank" style="color:var(--green);text-decoration:none;">tally_integration/</a>.</p>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- HOW IT WORKS -->
+    <section class="how-section">
+      <div class="section-label">How it works</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">01 / Key derivation</div>
+          <span class="step-icon">💳</span>
+          <div class="step-title">Card tap = signing key</div>
+          <p class="step-desc">
+            NFC reads the card via full EMV APDU chain. Combined with your biometric via Argon2id,
+            it reconstructs the master seed in RAM. <strong>500ms. Then it's gone.</strong>
+            Nothing stored on any server. Nothing in plaintext on the device.
+          </p>
+        </div>
+        <div class="step">
+          <div class="step-num">02 / Agent funding</div>
+          <span class="step-icon">🤖</span>
+          <div class="step-title">Session wallets for agents</div>
+          <p class="step-desc">
+            Agent requests funding. Telegram notification arrives with the amount and task visible before you approve.
+            Card tap. Session wallet funded with <strong>exactly what you approved.</strong>
+            The session key copies once to the agent's <code>.env</code>. Isolated, capped,
+            swept back automatically when the task ends.
+          </p>
+        </div>
+        <div class="step">
+          <div class="step-num">03 / x402 Payments</div>
+          <span class="step-icon">⚡</span>
+          <div class="step-title">Pay paywalled APIs on-chain</div>
+          <p class="step-desc">
+            Agent hits a 402. Payment wallet in headers.
+            <strong>0.1 USDC moves on-chain.</strong>
+            Server verifies independently. Signal returned.
+            No API key, no OAuth, no custody. Just a blockchain receipt.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- MAINNET PROOF -->
+    <section class="proof-section">
+      <div class="section-label">Confirmed on mainnet</div>
+      <div class="proof-grid">
+        <div class="proof-item">
+          <div class="proof-check">✓</div>
+          <div class="proof-text">
+            <strong>Full hardware wallet</strong>
+            Vault creation, SOL + USDC send/receive, Jupiter swap, QR scanner, emergency sweep
+          </div>
+        </div>
+        <div class="proof-item">
+          <div class="proof-check">✓</div>
+          <div class="proof-text">
+            <strong>Three session wallet types</strong>
+            Agent (SK shown once), Personal (SK stays on device), Burner (SK shown once)
+          </div>
+        </div>
+        <div class="proof-item">
+          <div class="proof-check">✓</div>
+          <div class="proof-text">
+            <strong>Full agent lifecycle</strong>
+            Fund, task, return. Confirmed with real USDC on mainnet.
+          </div>
+        </div>
+        <div class="proof-item">
+          <div class="proof-check">✓</div>
+          <div class="proof-text">
+            <strong>x402 end-to-end</strong>
+            Agent hits paywall. Card tap. USDC on-chain. Tx verified. Signal returned.
+          </div>
+        </div>
+        <div class="proof-item">
+          <div class="proof-check">✓</div>
+          <div class="proof-text">
+            <strong>HMAC-signed deep links</strong>
+            Every Telegram notification signed and verified on open, ±5 min timestamp window
+          </div>
+        </div>
+        <div class="proof-item">
+          <div class="proof-check">✓</div>
+          <div class="proof-text">
+            <strong>ATA rent reclaim</strong>
+            USDC account closed on sweep, ~$0.17 recovered per session automatically
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- TECH STACK -->
+    <section class="stack-section">
+      <div class="section-label">Tech stack</div>
+      <div class="stack-grid">
+        <div class="stack-item">
+          <div class="stack-layer">Mobile</div>
+          <div class="stack-detail">Ionic Capacitor · React · TypeScript · Android</div>
+        </div>
+        <div class="stack-item">
+          <div class="stack-layer">Crypto</div>
+          <div class="stack-detail">Argon2id (32 iter, 2MB) · XOR split · Ed25519/TweetNaCl · BIP39</div>
+        </div>
+        <div class="stack-item">
+          <div class="stack-layer">NFC</div>
+          <div class="stack-detail">Full EMV APDU chain · ISO 14443-4 · stale-tag flush</div>
+        </div>
+        <div class="stack-item">
+          <div class="stack-layer">Chain</div>
+          <div class="stack-detail">Solana mainnet · SPL token (USDC) · Jupiter VersionedTransaction</div>
+        </div>
+        <div class="stack-item">
+          <div class="stack-layer">Agent</div>
+          <div class="stack-detail">Python skill · Telegram bot · HMAC-SHA256 signed deep links</div>
+        </div>
+        <div class="stack-item">
+          <div class="stack-layer">x402 Server</div>
+          <div class="stack-detail">Next.js · Vercel · <a href="https://github.com/alexanxin/tally-signal" target="_blank">tally-signal ↗</a></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER CTA -->
+    <footer class="footer-cta">
+      <h2 class="footer-cta-headline">
+        The vault key <em>never exists</em><br>on any server.
+      </h2>
+      <p class="footer-cta-sub">
+        The card in your pocket is the signing key. Agents get an isolated session wallet, capped to budget, swept back when the task ends.
+      </p>
+      <div class="hero-actions" style="justify-content:center;">
+        <a class="btn-primary" href="https://github.com/alexanxin/tally-vault" target="_blank">View on GitHub ↗</a>
+        <a class="btn-ghost" href="https://tally.lll.mk/api/signal" target="_blank">Try x402 Endpoint</a>
+      </div>
+      <div class="footer-links">
+        <a class="footer-link" href="https://github.com/alexanxin/tally-vault" target="_blank">Repo</a>
+        <a class="footer-link" href="https://github.com/alexanxin/tally-signal" target="_blank">Signal Server</a>
+        <a class="footer-link" href="https://tally.lll.mk/api/signal" target="_blank">Live Endpoint</a>
+        <a class="footer-link" href="https://colosseum.com/frontier" target="_blank">Colosseum Frontier</a>
+      </div>
+      <div class="footer-built">Built for Colosseum Frontier Hackathon · Solana · 2026</div>
+    </footer>
+
+  </div>
+
+  <script>
+    // copy curl
+    function copyCurl() {
+      navigator.clipboard.writeText('curl https://tally.lll.mk/api/signal').then(() => {
+        const btn = document.getElementById('copyBtn');
+        btn.textContent = 'Copied';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+      });
+    }
+
+    // uptime counter — starts from random offset so it looks live
+    const startTime = Date.now() - Math.floor(Math.random() * 14400) * 1000;
+    function updateUptime() {
+      const s = Math.floor((Date.now() - startTime) / 1000);
+      const h = String(Math.floor(s / 3600)).padStart(2,'0');
+      const m = String(Math.floor((s % 3600) / 60)).padStart(2,'0');
+      const sec = String(s % 60).padStart(2,'0');
+      document.getElementById('uptime').textContent = `${h}:${m}:${sec}`;
+    }
+    setInterval(updateUptime, 1000);
+    updateUptime();
+
+    // cycling target address
+    const addrs = ['7xPq...9Wk2','BmN3...4Rk7','Qtz9...nW1d','Fp8s...2Xv5','Kw6j...mR3a'];
+    let addrIdx = 0;
+    setInterval(() => {
+      addrIdx = (addrIdx + 1) % addrs.length;
+      const el = document.getElementById('target-addr');
+      el.style.transition = 'opacity 0.25s';
+      el.style.opacity = '0';
+      setTimeout(() => { el.textContent = addrs[addrIdx]; el.style.opacity = '1'; }, 260);
+    }, 4200);
+
+    // cycling entropy state
+    const states = ['Entropy Extraction:<br>100%','SHARD_INIT<br>Complete','XOR Synthesis<br>Active','RAM Wipe<br>Pending'];
+    let stateIdx = 0;
+    setInterval(() => {
+      stateIdx = (stateIdx + 1) % states.length;
+      const el = document.getElementById('entropy-state');
+      el.style.transition = 'opacity 0.25s';
+      el.style.opacity = '0';
+      setTimeout(() => { el.innerHTML = states[stateIdx]; el.style.opacity = '1'; }, 260);
+    }, 5200);
+
+    // scroll reveal
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.style.opacity = '1';
+          e.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, { threshold: 0.06 });
+
+    document.querySelectorAll('section:not(.hero), footer').forEach(el => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(18px)';
+      el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+      io.observe(el);
+    });
+  </script>
+</body>
+</html>
