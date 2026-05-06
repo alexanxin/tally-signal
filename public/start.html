@@ -312,14 +312,50 @@
 
     .hero-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 
+    .hero-actions-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: nowrap;
+      border-top: 1px solid var(--border-dim);
+      padding: 36px 0 48px;
+    }
+
+    .hero-actions-primary {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+      padding-top: 18px;
+    }
+
+    .hero-actions-sep {
+      width: 1px;
+      height: 32px;
+      background: var(--border-dim);
+      flex-shrink: 0;
+      margin-top: 18px;
+    }
+
     .hero-dev-label {
       font-family: var(--mono);
-      font-size: 0.65rem;
+      font-size: 0.6rem;
       letter-spacing: 2px;
       text-transform: uppercase;
       color: var(--text-ghost);
-      margin-top: 16px;
-      margin-bottom: 8px;
+      white-space: nowrap;
+      position: absolute;
+      top: -8px;
+      left: 0;
+    }
+
+    .hero-actions-dev {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: nowrap;
+      position: relative;
+      padding-top: 18px;
     }
 
     .hero-dev-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -1058,23 +1094,6 @@
           <p>The card in your wallet already has an NFC chip. Tally reads it via full EMV APDU chain, runs it through Argon2id with your biometric, and derives a signing key in RAM. Under 500ms, then it wipes. Nothing persists on any server, ever. Any contactless card works, including expired ones.</p>
           <p>We built this for AI agents, where the private key problem is worse. An agent gets a funded session wallet per task, authorized by a card tap. The vault key never leaves the device. The session key has a budget cap, and when the task ends, funds sweep back automatically. x402 micropayments are live on Solana mainnet. The physical card is the only thing that can authorize a spend.</p>
         </div>
-        <div class="hero-actions">
-          <a class="btn-primary" href="https://www.youtube.com/watch?v=d2NVG9IdS38" target="_blank">Watch Demo ↗</a>
-          <a class="btn-ghost" href="https://github.com/alexanxin/tally-vault" target="_blank">View Repo ↗</a>
-        </div>
-        <div class="hero-dev-label">For developers</div>
-        <div class="hero-dev-actions">
-          <span class="tip-wrap">
-            <a class="btn-ghost" href="/tally-debug.apk" download>Download APK ↓</a>
-            <span class="tip">Android debug build. Requires a real contactless bank card (Visa / Mastercard) to sign transactions.</span>
-          </span>
-          <span class="tip-wrap">
-            <a class="btn-ghost" href="/tally-debug-mock-nfc.apk" download>Mock NFC APK ↓</a>
-            <span class="tip">Same app, no card required. Simulates a card tap automatically, for testing on devices without NFC.</span>
-          </span>
-          <a class="btn-ghost" href="/integration.html">Integration</a>
-          <a class="btn-ghost" href="#x402">x402 Endpoint</a>
-        </div>
       </div>
 
       <!-- ENTROPY ENGINE WIDGET -->
@@ -1151,6 +1170,27 @@
         </div>
       </div>
     </section>
+
+    <!-- HERO ACTIONS — full width below grid -->
+    <div class="hero-actions-row">
+      <div class="hero-actions-primary">
+        <a class="btn-primary" href="https://www.youtube.com/watch?v=d2NVG9IdS38" target="_blank">Demo Video ↗</a>
+        <a class="btn-ghost" href="https://github.com/alexanxin/tally-vault" target="_blank">Repo ↗</a>
+      </div>
+      <div class="hero-actions-dev">
+        <span class="hero-dev-label">For developers</span>
+        <span class="tip-wrap">
+          <a class="btn-ghost" href="/tally-debug.apk" download>Download APK ↓</a>
+          <span class="tip">Android debug build. Requires a real contactless bank card (Visa / Mastercard) to sign transactions.</span>
+        </span>
+        <span class="tip-wrap">
+          <a class="btn-ghost" href="/tally-debug-mock-nfc.apk" download>Mock NFC APK ↓</a>
+          <span class="tip">Same app, no card required. Simulates a card tap automatically, for testing on devices without NFC.</span>
+        </span>
+        <a class="btn-ghost" href="/integration.html">Integration</a>
+        <a class="btn-ghost" href="#x402">x402 Endpoint</a>
+      </div>
+    </div>
 
     <!-- CURL BLOCK -->
     <section class="curl-section" id="x402">
