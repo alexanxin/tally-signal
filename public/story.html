@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tally — Your card is the key. Here's why that matters.</title>
+  <meta name="description" content="The story behind Tally — how a weekend reading the EMV spec turned into a Solana wallet where your bank card is the signing key." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;0,800;0,900;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:         #0b0f14;
+      --bg-card:    #111820;
+      --bg-raised:  #161e28;
+      --border:       rgba(74, 222, 128, 0.18);
+      --border-dim:   rgba(74, 222, 128, 0.07);
+      --border-ui:    rgba(255, 255, 255, 0.07);
+      --green:        #4ade80;
+      --green-dim:    rgba(74, 222, 128, 0.09);
+      --green-glow:   rgba(74, 222, 128, 0.28);
+      --text:         #f0f4f8;
+      --text-body:    #b0bec5;
+      --text-meta:    #78909c;
+      --text-ghost:   #4a5568;
+      --display: 'DM Sans', system-ui, sans-serif;
+      --sans: 'Inter', system-ui, sans-serif;
+      --mono: 'JetBrains Mono', 'Fira Code', monospace;
+      --max-w: 720px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      background: var(--bg);
+      color: var(--text-body);
+      font-family: var(--sans);
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 90% 55% at 50% -5%, rgba(10, 38, 44, 0.95) 0%, transparent 55%),
+        radial-gradient(ellipse 40% 35% at 85% 65%, rgba(8, 28, 34, 0.45) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(74, 222, 128, 0.022) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(74, 222, 128, 0.022) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* NAV */
+    nav {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 32px;
+      max-width: 1040px;
+      margin: 0 auto;
+      border-bottom: 1px solid var(--border-dim);
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--mono);
+      font-weight: 700;
+      font-size: 0.9rem;
+      letter-spacing: 5px;
+      color: var(--green);
+      text-decoration: none;
+    }
+
+    .nav-logo-icon {
+      width: 64px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-right: 10px;
+      margin-left: 10px;
+    }
+
+    .nav-right { display: flex; align-items: center; gap: 24px; }
+
+    .nav-link {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-meta);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .nav-link:hover { color: var(--green); }
+
+    /* ARTICLE */
+    .article-wrap {
+      position: relative;
+      z-index: 1;
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 64px 32px 96px;
+      animation: fadeUp 0.55s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .article-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--green);
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      margin-bottom: 32px;
+      background: var(--green-dim);
+    }
+
+    .article-headline {
+      font-family: var(--display);
+      font-weight: 800;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+
+    .article-headline em {
+      font-style: normal;
+      color: var(--green);
+    }
+
+    .article-byline {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-meta);
+      margin-bottom: 48px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--border-dim);
+    }
+
+    .article-body {
+      font-size: 1.05rem;
+      line-height: 1.8;
+      color: var(--text-body);
+    }
+
+    .article-body p {
+      margin-bottom: 24px;
+    }
+
+    .article-body h2 {
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: 1.2rem;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      margin: 48px 0 16px;
+    }
+
+    .article-body strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .article-body .pullquote {
+      border-left: 2px solid var(--green);
+      padding: 4px 0 4px 24px;
+      margin: 32px 0;
+      font-size: 1.1rem;
+      color: var(--text);
+      font-style: italic;
+    }
+
+    .article-body .mono-inline {
+      font-family: var(--mono);
+      font-size: 0.85em;
+      color: var(--green);
+      background: var(--green-dim);
+      padding: 2px 6px;
+      border: 1px solid var(--border-dim);
+    }
+
+    .article-footer {
+      margin-top: 56px;
+      padding-top: 32px;
+      border-top: 1px solid var(--border-dim);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .article-footer-links {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .article-footer a {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      letter-spacing: 1px;
+      color: var(--green);
+      text-decoration: none;
+      transition: opacity 0.15s;
+    }
+
+    .article-footer a:hover { opacity: 0.7; }
+
+    .article-footer-byline {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 1px;
+      color: var(--text-meta);
+      text-transform: uppercase;
+    }
+
+    /* FOOTER */
+    .site-footer {
+      position: relative;
+      z-index: 1;
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 32px;
+      border-top: 1px solid var(--border-dim);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .footer-link {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-meta);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .footer-link:hover { color: var(--green); }
+
+    .footer-built {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 1px;
+      color: var(--text-ghost);
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 640px) {
+      nav, .article-wrap, .site-footer { padding-left: 20px; padding-right: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a class="nav-logo" href="/start.html">
+      <span class="nav-logo-icon"><img src="logo.png" alt="Tally" style="height:32px;width:auto;" /></span>
+      TALLY
+    </a>
+    <div class="nav-right">
+      <a class="nav-link" href="/screenshots.html">Screenshots</a>
+      <a class="nav-link" href="/integration.html">Integration</a>
+      <a class="nav-link" href="https://www.youtube.com/watch?v=d2NVG9IdS38" target="_blank">Demo Video ↗</a>
+      <a class="nav-link" href="https://x.com/tallyvault" target="_blank">@tallyvault ↗</a>
+      <a class="nav-link" href="https://github.com/alexanxin/tally-vault" target="_blank">GitHub ↗</a>
+    </div>
+  </nav>
+
+  <div class="article-wrap">
+
+    <div class="article-tag">Founder Story</div>
+
+    <h1 class="article-headline">Your card is the key.<br><em>Here's why that matters.</em></h1>
+
+    <div class="article-byline">Aleksandar Kolov &nbsp;·&nbsp; @tallyvault &nbsp;·&nbsp; May 2026</div>
+
+    <div class="article-body">
+
+      <p>Tally is a mobile app that turns any contactless bank card into a hardware signing key for a Solana wallet. Available for Android and iOS.</p>
+
+      <p>In medieval England, tax debts were recorded on a wooden stick. The stick was notched to show the amount owed, then split lengthwise down the middle. The government kept one half. The taxpayer kept the other. When it was time to settle, both halves had to be present and the notches had to match. Neither party could alter their half without the fraud being immediately obvious.</p>
+
+      <p>That's a 2-of-2 split. It's also the security model behind Tally. One half lives in your Android Keystore, gated by your biometric. The other is derived from your bank card every time you tap. Neither half is the key. The key doesn't exist until both are present, and it stops existing 500 milliseconds later.</p>
+
+      <h2>How it started</h2>
+
+      <p>When Solflare launched their Shield card, I paid attention. Hardware security in a mobile wallet, a physical object as the second factor. The idea was right. But it required a dedicated card, a piece of hardware specifically manufactured for the purpose.</p>
+
+      <p>I had a different question. My bank card already has an NFC chip. My phone already has an NFC reader. What if the card I already carry everywhere is enough?</p>
+
+      <p>So I spent a weekend reading the EMV spec, the communication protocol that every contactless card uses, and built something that extracts a card number, a hardware UID, and an expiry date from any Visa or Mastercard tap. Runs it through Argon2id. Produces a deterministic 32-byte key. Tap the card, get the same key every time. Never stored anywhere. Gone the moment you pull the card away.</p>
+
+      <p>The expired card thing is real, by the way. An expired card can't pay for your coffee. It still has a chip, it still has a UID, it still produces the same key it always did. It just can't fund anything. Which means it's actually more secure as a signing key, because someone who finds it in a drawer can't do anything with it except prove they were there.</p>
+
+      <h2>What the key actually does</h2>
+
+      <p>Combine the card-derived shard with a biometric-gated shard from the Android Keystore and you have a clean 2-of-2: something you have and something you are. Neither alone is worth anything. Together, they reconstruct the master seed in RAM. <span class="mono-inline">Argon2id</span> with 32 iterations and 2MB memory hardness, XOR'd with the biometric shard, into an Ed25519 keypair. Under 500ms, then it's wiped. Nothing in plaintext on the device, nothing on any server, ever.</p>
+
+      <div class="pullquote">The security model isn't "we protect your key really well." It's "the key doesn't exist long enough to steal."</div>
+
+      <h2>Why this matters for AI agents</h2>
+
+      <p>Once the signing flow was working, the next obvious question was: what do you do with a clean authorization primitive?</p>
+
+      <p>AI agents need to spend money. The standard approach is to give the agent a private key and hope nothing goes wrong. That's not paranoia, that's just how every agent wallet works today. The key lives somewhere, and wherever it lives is the attack surface.</p>
+
+      <p>Tally's approach: the agent gets a session wallet with a fixed budget. To fund it, you tap your card once. The agent spends from the session wallet, never touches the vault. When the task ends, everything sweeps back automatically. The session key exists, does its job, and becomes worthless.</p>
+
+      <p>The card tap is the authorization. Not a password. Not a seed phrase. A physical object in your hand, combined with your fingerprint, producing a cryptographic proof that you were present and you said yes.</p>
+
+      <h2>What's live right now</h2>
+
+      <p>When an agent hits a paywalled API and gets a 402 back, it doesn't stop. It calls Tally's Python skill to request funding. The skill sends a Telegram notification to your phone with the amount and a description of what the agent is trying to do.</p>
+
+      <p>You tap the button in that message. It opens a deep link directly into the Tally app, showing a confirmation screen with the amount and the request details. No password, no seed phrase. You tap your card. That's the approval.</p>
+
+      <p>The session wallet was already set up when you connected the agent in the Tally app. You copied the .env block once, dropped it into the agent's integration folder, and that's it. The agent knows its wallet. When the card tap approves the spend, funds move to that wallet. The agent monitors on-chain, picks up the balance, and retries the paywalled request. When the task ends, remaining funds sweep back to the vault automatically.</p>
+
+      <p>The full agent lifecycle is confirmed on Solana mainnet: fund, task, return. Real USDC, real verification, real sweep.</p>
+
+      <p>The card in your pocket was always a signing key. Tally is the software that finally uses it.</p>
+
+    </div>
+
+    <div class="article-footer">
+      <div class="article-footer-links">
+        <a href="https://github.com/alexanxin/tally-vault" target="_blank">github.com/alexanxin/tally-vault ↗</a>
+        <a href="/start.html">tally.lll.mk/start.html ↗</a>
+        <a href="https://x.com/tallyvault" target="_blank">@tallyvault on X ↗</a>
+      </div>
+      <div class="article-footer-byline">Built for Colosseum Frontier · Solana · 2026</div>
+    </div>
+
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-links">
+      <a class="footer-link" href="/start.html">Home</a>
+      <a class="footer-link" href="/screenshots.html">Screenshots</a>
+      <a class="footer-link" href="https://github.com/alexanxin/tally-vault" target="_blank">Repo</a>
+      <a class="footer-link" href="https://github.com/alexanxin/tally-signal" target="_blank">Signal Server</a>
+      <a class="footer-link" href="https://tally.lll.mk/api/signal" target="_blank">x402 Endpoint</a>
+      <a class="footer-link" href="https://x.com/tallyvault" target="_blank">@tallyvault</a>
+    </div>
+    <div class="footer-built">Built for Colosseum Frontier · Solana · 2026</div>
+  </footer>
+
+</body>
+</html>

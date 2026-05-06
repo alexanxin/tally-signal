@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tally — Agent Integration</title>
+  <meta name="description" content="Connect your AI agent to Tally. Download the integration folder, configure .env, and your agent can request on-chain USDC funding with a single card tap." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;0,800;0,900;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:           #0b0f14;
+      --bg-card:      #111820;
+      --bg-raised:    #161e28;
+      --bg-code:      #0d1520;
+      --border:       rgba(74, 222, 128, 0.18);
+      --border-dim:   rgba(74, 222, 128, 0.07);
+      --border-ui:    rgba(255, 255, 255, 0.07);
+      --green:        #4ade80;
+      --green-dim:    rgba(74, 222, 128, 0.09);
+      --green-glow:   rgba(74, 222, 128, 0.28);
+      --teal:         #2dd4bf;
+      --amber:        #fbbf24;
+      --text:         #f0f4f8;
+      --text-body:    #b0bec5;
+      --text-meta:    #78909c;
+      --text-ghost:   #4a5568;
+      --display:      'DM Sans', system-ui, sans-serif;
+      --sans:         'Inter', system-ui, sans-serif;
+      --mono:         'JetBrains Mono', 'Fira Code', monospace;
+      --max-w:        860px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      background: var(--bg);
+      color: var(--text-body);
+      font-family: var(--sans);
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 90% 55% at 50% -5%, rgba(10, 38, 44, 0.95) 0%, transparent 55%),
+        radial-gradient(ellipse 40% 35% at 85% 65%, rgba(8, 28, 34, 0.45) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(74, 222, 128, 0.022) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(74, 222, 128, 0.022) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* NAV */
+    nav {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 32px;
+      max-width: 1040px;
+      margin: 0 auto;
+      border-bottom: 1px solid var(--border-dim);
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--mono);
+      font-weight: 700;
+      font-size: 0.9rem;
+      letter-spacing: 5px;
+      color: var(--green);
+      text-decoration: none;
+    }
+
+    .nav-logo-icon {
+      width: 64px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-right: 10px;
+      margin-left: 10px;
+    }
+
+    .nav-right { display: flex; align-items: center; gap: 24px; }
+
+    .nav-link {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-meta);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .nav-link:hover { color: var(--green); }
+
+    .nav-status {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 1.5px;
+      color: var(--text-meta);
+      text-transform: uppercase;
+    }
+
+    .status-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+      animation: pulse 2.4s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; box-shadow: 0 0 8px var(--green); }
+      50%       { opacity: 0.5; box-shadow: 0 0 3px var(--green); }
+    }
+
+    /* MAIN */
+    .wrap {
+      position: relative;
+      z-index: 1;
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 64px 32px 96px;
+      animation: fadeUp 0.55s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .page-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--green);
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      margin-bottom: 28px;
+      background: var(--green-dim);
+    }
+
+    h1 {
+      font-family: var(--display);
+      font-weight: 800;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      margin-bottom: 16px;
+    }
+
+    h1 em {
+      font-style: normal;
+      color: var(--green);
+    }
+
+    .intro {
+      font-size: 1.05rem;
+      line-height: 1.8;
+      color: var(--text-body);
+      margin-bottom: 48px;
+      padding-bottom: 40px;
+      border-bottom: 1px solid var(--border-dim);
+    }
+
+    /* FLOW DIAGRAM */
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2px;
+      margin-bottom: 56px;
+    }
+
+    .flow-step {
+      background: var(--bg-card);
+      border: 1px solid var(--border-dim);
+      padding: 20px 16px;
+      text-align: center;
+    }
+
+    .flow-step-num {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-ghost);
+      margin-bottom: 8px;
+    }
+
+    .flow-step-label {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.5px;
+      color: var(--green);
+      line-height: 1.4;
+    }
+
+    .flow-step-sub {
+      font-size: 0.75rem;
+      color: var(--text-meta);
+      margin-top: 6px;
+      line-height: 1.4;
+    }
+
+    /* DOWNLOAD CTA */
+    .download-block {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 32px;
+      margin-bottom: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .download-block-left h2 {
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--text);
+      margin-bottom: 6px;
+      letter-spacing: -0.02em;
+    }
+
+    .download-block-left p {
+      font-size: 0.85rem;
+      color: var(--text-meta);
+      font-family: var(--mono);
+      letter-spacing: 0.5px;
+    }
+
+    .btn-download {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--green);
+      color: #0b0f14;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 14px 28px;
+      transition: opacity 0.15s;
+      white-space: nowrap;
+    }
+
+    .btn-download:hover { opacity: 0.85; }
+
+    .btn-ghost-sm {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--border);
+      color: var(--text-meta);
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 12px 20px;
+      transition: border-color 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+
+    .btn-ghost-sm:hover { border-color: var(--green); color: var(--green); }
+
+    /* STEPS */
+    .steps { margin-bottom: 56px; }
+
+    .step {
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: 0 24px;
+      margin-bottom: 2px;
+    }
+
+    .step-num-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .step-num {
+      width: 40px;
+      height: 40px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--green);
+      flex-shrink: 0;
+    }
+
+    .step-line {
+      width: 1px;
+      flex: 1;
+      background: var(--border-dim);
+      margin-top: 4px;
+      min-height: 24px;
+    }
+
+    .step-content {
+      background: var(--bg-card);
+      border: 1px solid var(--border-dim);
+      padding: 20px 24px 24px;
+      margin-bottom: 2px;
+    }
+
+    .step-content h3 {
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--text);
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+
+    .step-content p {
+      font-size: 0.9rem;
+      line-height: 1.7;
+      color: var(--text-body);
+      margin-bottom: 12px;
+    }
+
+    .step-content p:last-child { margin-bottom: 0; }
+
+    .step-content .note {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--text-meta);
+      background: var(--bg-code);
+      border-left: 2px solid var(--border);
+      padding: 10px 14px;
+      margin-top: 12px;
+      line-height: 1.6;
+    }
+
+    /* CODE BLOCKS */
+    pre {
+      background: var(--bg-code);
+      border: 1px solid var(--border-dim);
+      padding: 20px;
+      overflow-x: auto;
+      margin: 12px 0;
+      position: relative;
+    }
+
+    pre code {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      line-height: 1.7;
+      color: var(--text-body);
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: var(--bg-raised);
+      border: 1px solid var(--border-dim);
+      color: var(--text-meta);
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 5px 10px;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .copy-btn:hover { border-color: var(--green); color: var(--green); }
+    .copy-btn.copied { color: var(--green); border-color: var(--green); }
+
+    .kw { color: var(--green); }
+    .cm { color: var(--text-ghost); font-style: italic; }
+    .st { color: var(--teal); }
+    .nm { color: var(--amber); }
+
+    /* FILE LIST */
+    .file-list {
+      background: var(--bg-card);
+      border: 1px solid var(--border-dim);
+      padding: 24px;
+      margin-bottom: 56px;
+    }
+
+    .file-list h2 {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-meta);
+      margin-bottom: 16px;
+    }
+
+    .file-item {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 16px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-dim);
+      align-items: baseline;
+    }
+
+    .file-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .file-item:first-of-type { padding-top: 0; }
+
+    .file-name {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--green);
+      letter-spacing: 0.3px;
+    }
+
+    .file-desc {
+      font-size: 0.83rem;
+      color: var(--text-meta);
+      line-height: 1.5;
+    }
+
+    /* SECTION HEADERS */
+    .section-header {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-meta);
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-dim);
+    }
+
+    /* FOOTER */
+    .site-footer {
+      position: relative;
+      z-index: 1;
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 32px;
+      border-top: 1px solid var(--border-dim);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .footer-links { display: flex; gap: 20px; flex-wrap: wrap; }
+
+    .footer-link {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-meta);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .footer-link:hover { color: var(--green); }
+
+    .footer-built {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 1px;
+      color: var(--text-ghost);
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 640px) {
+      nav, .wrap, .site-footer { padding-left: 20px; padding-right: 20px; }
+      .flow { grid-template-columns: repeat(2, 1fr); }
+      .step { grid-template-columns: 1fr; }
+      .step-num-col { display: none; }
+      .file-item { grid-template-columns: 1fr; gap: 4px; }
+      .download-block { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a class="nav-logo" href="/start.html">
+      <span class="nav-logo-icon"><img src="logo.png" alt="Tally" style="height:32px;width:auto;" /></span>
+      TALLY
+    </a>
+    <div class="nav-right">
+      <a class="nav-link" href="/story.html">Story</a>
+      <a class="nav-link" href="/screenshots.html">Screenshots</a>
+      <a class="nav-link" href="https://www.youtube.com/watch?v=d2NVG9IdS38" target="_blank">Demo Video ↗</a>
+      <a class="nav-link" href="https://x.com/tallyvault" target="_blank">@tallyvault ↗</a>
+      <a class="nav-link" href="https://github.com/alexanxin/tally-vault" target="_blank">GitHub ↗</a>
+      <div class="nav-status">
+        <div class="status-dot"></div>
+        Mainnet
+      </div>
+    </div>
+  </nav>
+
+  <div class="wrap">
+
+    <div class="page-tag">Agent Integration · Python · x402</div>
+    <h1>Connect your agent<br>to <em>Tally.</em></h1>
+
+    <div class="intro">
+      <p>Drop the integration folder into your agent's project. Configure one <code style="font-family:var(--mono);font-size:0.88em;color:var(--green);background:var(--green-dim);padding:2px 6px;">.env</code> file. Your agent can now request on-chain USDC funding with a card tap and hit paywalled x402 APIs automatically.</p>
+    </div>
+
+    <!-- FLOW -->
+    <div class="section-header">How it works</div>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-step-num">01</div>
+        <div class="flow-step-label">Agent requests budget</div>
+        <div class="flow-step-sub">Calls request_funding()</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num">02</div>
+        <div class="flow-step-label">Telegram notification</div>
+        <div class="flow-step-sub">Amount + task description sent to your phone</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num">03</div>
+        <div class="flow-step-label">Card tap authorizes</div>
+        <div class="flow-step-sub">Session wallet funded on-chain</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num">04</div>
+        <div class="flow-step-label">Funds sweep back</div>
+        <div class="flow-step-sub">Remaining USDC returns to vault automatically</div>
+      </div>
+    </div>
+
+    <!-- DOWNLOAD -->
+    <div class="download-block">
+      <div class="download-block-left">
+        <h2>tally_integration.zip</h2>
+        <p>warm_vault_auth.py · tg_bot.py · .env.example · SETUP.md · demo scripts</p>
+      </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <a class="btn-download" href="/tally_integration.zip" download>Download ↓</a>
+        <a class="btn-ghost-sm" href="https://github.com/alexanxin/tally-vault" target="_blank">View on GitHub ↗</a>
+      </div>
+    </div>
+
+    <!-- STEPS -->
+    <div class="section-header" style="margin-bottom:24px;">Setup: 4 steps</div>
+    <div class="steps">
+
+      <div class="step">
+        <div class="step-num-col">
+          <div class="step-num">1</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-content">
+          <h3>Install dependencies</h3>
+          <p>Python 3.10+ required. Install the three packages the skill uses.</p>
+          <pre><code><button class="copy-btn" onclick="copyCode(this)">Copy</button>pip install solana solders requests</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num-col">
+          <div class="step-num">2</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-content">
+          <h3>Connect in the Tally app</h3>
+          <p>Open the Tally app → <strong>Agents</strong> tab → <strong>New Connection</strong>. The wizard walks you through Telegram bot setup and generates a session keypair. At the end, tap <strong>Copy .env block</strong>.</p>
+          <p>That block has everything pre-filled: Telegram token, chat ID, session private key, vault address, and deep-link secret. Paste it directly into <code style="font-family:var(--mono);font-size:0.85em;color:var(--green);">tally_integration/.env</code>.</p>
+          <div class="note">No Telegram bot yet? The wizard has step-by-step instructions inside the app under each field.</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num-col">
+          <div class="step-num">3</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-content">
+          <h3>Fund your vault</h3>
+          <p>Your vault needs SOL for gas and USDC for agent sessions. On devnet, both are free.</p>
+          <pre><code><button class="copy-btn" onclick="copyCode(this)">Copy</button><span class="cm"># SOL airdrop (replace with your vault address from Tally home screen)</span>
+solana airdrop 1 &lt;YOUR_VAULT_ADDRESS&gt; --url devnet
+
+<span class="cm"># USDC — use the Circle faucet (also creates the required USDC token account)</span>
+<span class="cm"># https://faucet.circle.com</span></code></pre>
+          <div class="note">The Circle faucet creates the USDC Associated Token Account on your vault address. This is required for fund sweeps to work. Do it once before your first session.</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num-col">
+          <div class="step-num">4</div>
+        </div>
+        <div class="step-content">
+          <h3>Run the demo</h3>
+          <p>Test the full x402 flow end-to-end. The agent hits the live paywalled endpoint, your phone gets a Telegram notification, you tap your card, real USDC moves on-chain, signal returned.</p>
+          <pre><code><button class="copy-btn" onclick="copyCode(this)">Copy</button>cd tally_integration
+python3 run_x402_demo.py</code></pre>
+          <p>Expected output:</p>
+          <pre><code>→ GET tally.lll.mk/api/signal
+← 402 Payment Required
+→ Telegram notification sent
+← Card tap received · Session funded
+→ 0.1 USDC sent on-chain (tx: 3xKp...)
+→ Waiting for propagation...
+→ GET /api/signal + X-Tally-Session + X-Tally-Tx
+← 200 OK
+   signal: BULLISH | SOL/USDC | Entry: $86.49 | RR: 1:1.7
+→ Funds swept back to vault</code></pre>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- QUICK USAGE -->
+    <div class="section-header">Quick usage</div>
+
+    <p style="font-size:0.9rem;color:var(--text-body);margin-bottom:16px;line-height:1.7;">Request funding and execute a task:</p>
+    <pre style="margin-bottom:32px;"><code><button class="copy-btn" onclick="copyCode(this)">Copy</button><span class="kw">from</span> warm_vault_auth <span class="kw">import</span> request_funding, return_funds
+
+<span class="cm"># Sends Telegram notification, waits for card tap, returns funded session</span>
+session = request_funding(
+    amount_usdc=<span class="nm">5.0</span>,
+    task_description=<span class="st">"Research flight prices to Tokyo"</span>,
+)
+
+<span class="cm"># Agent executes tasks using session wallet...</span>
+
+<span class="cm"># Sweep residual back to vault when done</span>
+return_funds(session)</code></pre>
+
+    <p style="font-size:0.9rem;color:var(--text-body);margin-bottom:16px;line-height:1.7;">Hit a paywalled x402 API automatically:</p>
+    <pre style="margin-bottom:56px;"><code><button class="copy-btn" onclick="copyCode(this)">Copy</button><span class="kw">from</span> warm_vault_auth <span class="kw">import</span> request_with_payment
+
+<span class="cm"># Full x402 flow: 402 → card tap → USDC on-chain → signal → sweep back</span>
+result = request_with_payment(
+    url=<span class="st">"https://tally.lll.mk/api/signal"</span>,
+    amount_usdc=<span class="nm">1.0</span>,
+    task_description=<span class="st">"Fetch SOL/USDC market signal"</span>,
+    return_funds_after=<span class="kw">True</span>,
+)
+
+<span class="kw">if</span> result[<span class="st">"ok"</span>]:
+    signal = result[<span class="st">"data"</span>][<span class="st">"signal"</span>]
+    print(signal[<span class="st">"signal"</span>])   <span class="cm"># BULLISH / BEARISH</span>
+    print(signal[<span class="st">"entry"</span>])    <span class="cm"># entry price</span></code></pre>
+
+    <!-- FILE LIST -->
+    <div class="file-list">
+      <h2>What's in the zip</h2>
+      <div class="file-item">
+        <div class="file-name">warm_vault_auth.py</div>
+        <div class="file-desc">Core skill: request_funding, check_balance, return_funds, request_with_payment</div>
+      </div>
+      <div class="file-item">
+        <div class="file-name">tg_bot.py</div>
+        <div class="file-desc">Telegram notifications: funding requests, payment confirmations, sweep alerts</div>
+      </div>
+      <div class="file-item">
+        <div class="file-name">.env.example</div>
+        <div class="file-desc">Config template with all TALLY_* variables documented</div>
+      </div>
+      <div class="file-item">
+        <div class="file-name">SETUP.md</div>
+        <div class="file-desc">Full setup guide including manual config, mainnet checklist, and troubleshooting table</div>
+      </div>
+      <div class="file-item">
+        <div class="file-name">SKILL.md</div>
+        <div class="file-desc">Quick reference for AI agents: function signatures and usage patterns</div>
+      </div>
+      <div class="file-item">
+        <div class="file-name">AGENT_PROMPT.md</div>
+        <div class="file-desc">System prompt and user message to trigger the x402 demo in any AI agent</div>
+      </div>
+      <div class="file-item">
+        <div class="file-name">run_x402_demo.py</div>
+        <div class="file-desc">Full x402 demo: hits the live paywalled endpoint, card tap, real USDC, signal returned</div>
+      </div>
+      <div class="file-item">
+        <div class="file-name">run_test.py</div>
+        <div class="file-desc">Smoke test: request funding and verify on-chain balance</div>
+      </div>
+      <div class="file-item">
+        <div class="file-name">run_return_funds.py</div>
+        <div class="file-desc">Sweep residual USDC back to vault from an existing session</div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-links">
+      <a class="footer-link" href="/start.html">Home</a>
+      <a class="footer-link" href="/story.html">Story</a>
+      <a class="footer-link" href="/screenshots.html">Screenshots</a>
+      <a class="footer-link" href="https://github.com/alexanxin/tally-vault" target="_blank">Repo</a>
+      <a class="footer-link" href="https://tally.lll.mk/api/signal" target="_blank">x402 Endpoint</a>
+      <a class="footer-link" href="https://x.com/tallyvault" target="_blank">@tallyvault</a>
+    </div>
+    <div class="footer-built">Built for Colosseum Frontier · Solana · 2026</div>
+  </footer>
+
+  <script>
+    function copyCode(btn) {
+      const pre = btn.closest('pre');
+      const code = pre.querySelector('code');
+      const text = code.innerText.replace(/^Copy\n?/, '');
+      navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = 'Copied';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+      });
+    }
+  </script>
+
+</body>
+</html>

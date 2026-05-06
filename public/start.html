@@ -179,7 +179,8 @@
     .nav-link {
       font-family: var(--mono);
       font-size: 0.75rem;
-      letter-spacing: 0.5px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
       color: var(--text-meta);
       text-decoration: none;
       transition: color 0.15s;
@@ -262,6 +263,62 @@
     }
 
     .hero-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+
+    .hero-dev-label {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-ghost);
+      margin-top: 16px;
+      margin-bottom: 8px;
+    }
+
+    .hero-dev-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+    /* ─────────── TOOLTIPS ─────────── */
+    .tip-wrap {
+      position: relative;
+      display: inline-flex;
+    }
+    .tip-wrap .tip {
+      position: absolute;
+      bottom: calc(100% + 10px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      color: var(--text-body);
+      font-family: var(--sans);
+      font-size: 0.72rem;
+      line-height: 1.45;
+      letter-spacing: 0;
+      text-transform: none;
+      white-space: nowrap;
+      padding: 8px 12px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s, transform 0.15s;
+      transform: translateX(-50%) translateY(4px);
+      z-index: 100;
+      width: 260px;
+      white-space: normal;
+      text-align: center;
+      padding: 10px 16px;
+    }
+    .tip-wrap .tip::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid transparent;
+      border-top-color: var(--border);
+    }
+    .tip-wrap:hover .tip {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
 
     .btn-primary {
       display: inline-flex;
@@ -853,11 +910,16 @@
       TALLY
     </div>
     <div class="nav-right">
+      <a class="nav-link" href="/story.html">Story</a>
+      <a class="nav-link" href="/screenshots.html">Screenshots</a>
+      <a class="nav-link" href="/integration.html">Integration</a>
+      <a class="nav-link" href="https://www.youtube.com/watch?v=d2NVG9IdS38" target="_blank">Demo Video ↗</a>
+      <a class="nav-link" href="https://x.com/tallyvault" target="_blank">@tallyvault ↗</a>
+      <a class="nav-link" href="https://github.com/alexanxin/tally-vault" target="_blank">GitHub ↗</a>
       <div class="nav-status">
         <div class="status-dot"></div>
-        Mainnet Live
+        Mainnet
       </div>
-      <a class="nav-link" href="https://github.com/alexanxin/tally-vault" target="_blank">GitHub ↗</a>
     </div>
   </nav>
 
@@ -879,8 +941,21 @@
           <p>We built this for AI agents, where the private key problem is worse. An agent gets a funded session wallet per task, authorized by a card tap. The vault key never leaves the device. The session key has a budget cap, and when the task ends, funds sweep back automatically. x402 micropayments are live on Solana mainnet. The physical card is the only thing that can authorize a spend.</p>
         </div>
         <div class="hero-actions">
-          <a class="btn-primary" href="https://github.com/alexanxin/tally-vault" target="_blank">View Repo ↗</a>
-          <a class="btn-ghost" href="#x402">Live Demo</a>
+          <a class="btn-primary" href="https://www.youtube.com/watch?v=d2NVG9IdS38" target="_blank">Watch Demo ↗</a>
+          <a class="btn-ghost" href="https://github.com/alexanxin/tally-vault" target="_blank">View Repo ↗</a>
+        </div>
+        <div class="hero-dev-label">For developers</div>
+        <div class="hero-dev-actions">
+          <span class="tip-wrap">
+            <a class="btn-ghost" href="/tally-debug.apk" download>Download APK ↓</a>
+            <span class="tip">Android debug build. Requires a real contactless bank card (Visa / Mastercard) to sign transactions.</span>
+          </span>
+          <span class="tip-wrap">
+            <a class="btn-ghost" href="/tally-debug-mock-nfc.apk" download>Mock NFC APK ↓</a>
+            <span class="tip">Same app, no card required. Simulates a card tap automatically, for testing on devices without NFC.</span>
+          </span>
+          <a class="btn-ghost" href="/integration.html">Integration</a>
+          <a class="btn-ghost" href="#x402">x402 Endpoint</a>
         </div>
       </div>
 
@@ -1108,9 +1183,13 @@
         <a class="btn-ghost" href="https://tally.lll.mk/api/signal" target="_blank">Try x402 Endpoint</a>
       </div>
       <div class="footer-links">
+        <a class="footer-link" href="/story.html">Story</a>
+        <a class="footer-link" href="/screenshots.html">Screenshots</a>
+        <a class="footer-link" href="/integration.html">Integration</a>
         <a class="footer-link" href="https://github.com/alexanxin/tally-vault" target="_blank">Repo</a>
         <a class="footer-link" href="https://github.com/alexanxin/tally-signal" target="_blank">Signal Server</a>
-        <a class="footer-link" href="https://tally.lll.mk/api/signal" target="_blank">Live Endpoint</a>
+        <a class="footer-link" href="https://tally.lll.mk/api/signal" target="_blank">x402 Endpoint</a>
+        <a class="footer-link" href="https://x.com/tallyvault" target="_blank">@tallyvault</a>
         <a class="footer-link" href="https://colosseum.com/frontier" target="_blank">Colosseum Frontier</a>
       </div>
       <div class="footer-built">Built for Colosseum Frontier Hackathon · Solana · 2026</div>
