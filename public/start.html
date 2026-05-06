@@ -235,6 +235,80 @@
     }
     .nav-link:hover { color: var(--green); }
 
+    .nav-icon-link {
+      display: flex;
+      align-items: center;
+      color: var(--text-meta);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .nav-icon-link:hover { color: var(--green); }
+
+    /* ─────────── NAV DROPDOWN ─────────── */
+    .nav-dropdown {
+      position: relative;
+    }
+    .nav-dropdown-toggle {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-meta);
+      text-decoration: none;
+      transition: color 0.15s;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .nav-dropdown-toggle:hover { color: var(--green); }
+    .nav-dropdown-toggle svg { transition: transform 0.2s; }
+    .nav-dropdown.open .nav-dropdown-toggle svg { transform: rotate(180deg); }
+    .nav-dropdown-toggle:hover svg path { stroke: var(--green); }
+
+    .nav-dropdown-menu {
+      display: none;
+      position: absolute;
+      top: calc(100% + 14px);
+      right: 0;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      min-width: 220px;
+      padding: 8px 0;
+      z-index: 100;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    .nav-dropdown.open .nav-dropdown-menu { display: block; }
+
+    .nav-dropdown-item {
+      display: block;
+      padding: 10px 16px;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-meta);
+      text-decoration: none;
+      transition: color 0.15s, background 0.15s;
+    }
+    .nav-dropdown-item:hover { color: var(--green); background: var(--green-dim); }
+    .nav-dropdown-item-sub {
+      display: block;
+      padding: 0 16px 10px;
+      font-family: var(--sans);
+      font-size: 0.7rem;
+      color: var(--text-ghost);
+      text-transform: none;
+      letter-spacing: 0;
+      line-height: 1.4;
+      border-bottom: 1px solid var(--border-dim);
+      margin-bottom: 4px;
+    }
+
     /* ─────────── HERO ─────────── */
     .hero {
       padding: 80px 0 56px;
@@ -1004,6 +1078,15 @@
     }
     .footer-link:hover { color: var(--green); }
 
+    .footer-icon-link {
+      display: inline-flex;
+      align-items: center;
+      color: var(--text-meta);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .footer-icon-link:hover { color: var(--green); }
+
     .footer-built {
       margin-top: 24px;
       font-size: 0.78rem;
@@ -1054,8 +1137,22 @@
       <a class="nav-link" href="https://www.youtube.com/watch?v=d2NVG9IdS38" target="_blank">Demo Video ↗</a>
       <a class="nav-link" href="/deck.pdf" target="_blank">Deck ↗</a>
       <a class="nav-link" href="/integration.html">Integration</a>
+      <div class="nav-dropdown" id="navDownloadDropdown">
+        <button class="nav-dropdown-toggle" onclick="toggleNavDropdown()">
+          Download
+          <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="nav-dropdown-menu">
+          <a class="nav-dropdown-item" href="/tally-debug.apk" download>Download APK ↓</a>
+          <span class="nav-dropdown-item-sub">Real card required. Any contactless Visa or Mastercard.</span>
+          <a class="nav-dropdown-item" href="/tally-debug-mock-nfc.apk" download>Mock NFC APK ↓</a>
+          <span class="nav-dropdown-item-sub">No card needed. Simulates tap automatically.</span>
+        </div>
+      </div>
       <a class="nav-link" href="https://github.com/alexanxin/tally-vault" target="_blank">GitHub ↗</a>
-      <a class="nav-link" href="https://x.com/tallyvault" target="_blank">@tallyvault ↗</a>
+      <a class="nav-icon-link" href="https://x.com/tallyvault" target="_blank" aria-label="@tallyvault on X">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L1.254 2.25H8.08l4.253 5.622 5.911-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      </a>
     </div>
     <button class="nav-hamburger" id="navHamburger" aria-label="Open menu">
       <span></span><span></span><span></span>
@@ -1066,8 +1163,10 @@
       <a class="nav-link" href="https://www.youtube.com/watch?v=d2NVG9IdS38" target="_blank">Demo Video ↗</a>
       <a class="nav-link" href="/deck.pdf" target="_blank">Deck ↗</a>
       <a class="nav-link" href="/integration.html">Integration</a>
+      <a class="nav-link" href="/tally-debug.apk" download>Download APK ↓</a>
+      <a class="nav-link" href="/tally-debug-mock-nfc.apk" download>Mock NFC APK ↓</a>
       <a class="nav-link" href="https://github.com/alexanxin/tally-vault" target="_blank">GitHub ↗</a>
-      <a class="nav-link" href="https://x.com/tallyvault" target="_blank">@tallyvault ↗</a>
+      <a class="nav-link" href="https://x.com/tallyvault" target="_blank">@tallyvault on X ↗</a>
     </div>
   </nav>
 
@@ -1386,8 +1485,10 @@
         <a class="footer-link" href="/deck.pdf" target="_blank">Deck</a>
         <a class="footer-link" href="https://github.com/alexanxin/tally-signal" target="_blank">Signal Server</a>
         <a class="footer-link" href="https://tally.lll.mk/api/signal" target="_blank">x402 Endpoint</a>
-        <a class="footer-link" href="https://x.com/tallyvault" target="_blank">@tallyvault</a>
-        <a class="footer-link" href="https://colosseum.com/frontier" target="_blank">Colosseum Frontier</a>
+        <a class="footer-icon-link" href="https://x.com/tallyvault" target="_blank" aria-label="@tallyvault on X">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L1.254 2.25H8.08l4.253 5.622 5.911-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        </a>
+        <a class="footer-link" href="https://arena.colosseum.org/projects/explore" target="_blank">Colosseum Project</a>
       </div>
       <div class="footer-built">Built for Colosseum Frontier Hackathon · Solana · 2026</div>
     </footer>
@@ -1408,6 +1509,15 @@
         hamburger.classList.remove('open');
         mobileMenu.classList.remove('open');
       });
+    });
+
+    // download dropdown
+    function toggleNavDropdown() {
+      document.getElementById('navDownloadDropdown').classList.toggle('open');
+    }
+    document.addEventListener('click', (e) => {
+      const dd = document.getElementById('navDownloadDropdown');
+      if (dd && !dd.contains(e.target)) dd.classList.remove('open');
     });
 
     // copy curl
