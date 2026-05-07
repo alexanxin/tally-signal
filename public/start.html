@@ -269,6 +269,19 @@
     .nav-dropdown.open .nav-dropdown-toggle svg { transform: rotate(180deg); }
     .nav-dropdown-toggle:hover svg path { stroke: var(--green); }
 
+    .nav-link-highlight {
+      color: var(--green) !important;
+      border: 1px solid rgba(74, 222, 128, 0.35);
+      border-radius: 3px;
+      padding: 3px 10px !important;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .nav-link-highlight:hover {
+      background: rgba(74, 222, 128, 0.08);
+      border-color: rgba(74, 222, 128, 0.6);
+    }
+    .nav-dropdown-toggle.nav-link-highlight { padding: 3px 10px; }
+
     .nav-dropdown-menu {
       display: none;
       position: absolute;
@@ -1136,9 +1149,9 @@
       <a class="nav-link" href="/screenshots.html">Screenshots</a>
       <a class="nav-link" href="https://youtu.be/FXF-Jtiyowk" target="_blank">Demo Video ↗</a>
       <a class="nav-link" href="/deck.pdf" target="_blank">Deck ↗</a>
-      <a class="nav-link" href="/integration.html">Integration</a>
+      <a class="nav-link nav-link-highlight" href="/integration.html">Integration</a>
       <div class="nav-dropdown" id="navDownloadDropdown">
-        <button class="nav-dropdown-toggle" onclick="toggleNavDropdown()">
+        <button class="nav-dropdown-toggle nav-link-highlight" onclick="toggleNavDropdown()">
           Download
           <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
