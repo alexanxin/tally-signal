@@ -21,6 +21,11 @@ import nodemailer from "nodemailer";
  *   EMAIL_SERVER_PASSWORD   SMTP password / app-specific password
  *   EMAIL_FROM              From address (e.g. "Tally Waitlist <hello@lll.mk>")
  *   WAITLIST_TO_EMAIL       Destination inbox (defaults to aleksandar@lll.mk)
+ *   EMAIL_SERVER_SECURE     "true" forces TLS. Defaults to true for port 465,
+ *                           false otherwise (STARTTLS on 587).
+ *   WAITLIST_DEBUG          "1" surfaces the nodemailer error message back
+ *                           to the client in the response body for fast
+ *                           diagnosis. Leave unset in prod.
  *
  * If SMTP env vars are missing the route returns 503 rather than throwing,
  * so the form gives a real error instead of a stack trace.
@@ -29,6 +34,10 @@ import nodemailer from "nodemailer";
 // Force the Node runtime — nodemailer pulls in node-only modules and the
 // edge runtime would silently break SMTP.
 export const runtime = "nodejs";
+
+// SMTP handshakes on slow providers can blow past the 10s default; give it
+// room to fail with a real error instead of a timeout.
+export const maxDuration = 30;
 
 const TO_EMAIL = process.env.WAITLIST_TO_EMAIL ?? "aleksandar@lll.mk";
 
@@ -104,11 +113,17 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Auto-detect TLS mode unless explicitly overridden. Wrong port/secure
+  // combo (e.g. 465 + secure:false) is the most common SMTP misconfig.
+  const smtpPort = Number(process.env.EMAIL_SERVER_PORT!);
+  const smtpSecure =
+    process.env.EMAIL_SERVER_SECURE === "true" || smtpPort === 465;
+
   try {
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_SERVER_HOST!,
-      port: Number(process.env.EMAIL_SERVER_PORT!),
-      secure: false, // STARTTLS on 587; flip to true if you use 465
+      port: smtpPort,
+      secure: smtpSecure,
       auth: {
         user: process.env.EMAIL_SERVER_USER!,
         pass: process.env.EMAIL_SERVER_PASSWORD!,
@@ -125,9 +140,29 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error("Waitlist send error:", err);
+    // Log the structured nodemailer fields that actually tell you what's
+    // wrong: SMTP reply code, the command that failed, and the server's
+    // response. These show up in Vercel function logs.
+    const e = err as { message?: string; code?: string; command?: string; response?: string };
+    console.error("[waitlist] SMTP send failed:", {
+      message: e?.message,
+      code: e?.code,
+      command: e?.command,
+      response: e?.response,
+      host: process.env.EMAIL_SERVER_HOST,
+      port: smtpPort,
+      secure: smtpSecure,
+      from: process.env.EMAIL_FROM,
+    });
+    const debug = process.env.WAITLIST_DEBUG === "1";
     return NextResponse.json(
-      { ok: false, error: "send_failed" },
+      {
+        ok: false,
+        error: "send_failed",
+        details: debug
+          ? { message: e?.message, code: e?.code, response: e?.response }
+          : undefined,
+      },
       { status: 502 },
     );
   }
