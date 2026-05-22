@@ -1070,6 +1070,76 @@
       line-height: 1.6;
     }
 
+    /* ─────────── WAITLIST FORM ─────────── */
+    .waitlist-wrap {
+      max-width: 460px;
+      margin: 32px auto 0;
+      text-align: left;
+    }
+    .waitlist-label {
+      display: block;
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--green);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    .waitlist-form {
+      display: flex;
+      gap: 0;
+      border: 1px solid var(--border);
+      background: var(--bg-inset);
+      transition: border-color 0.2s;
+    }
+    .waitlist-form:focus-within { border-color: var(--green); }
+    .waitlist-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      padding: 14px 16px;
+      min-width: 0;
+    }
+    .waitlist-input::placeholder { color: var(--text-muted); opacity: 0.7; }
+    .waitlist-submit {
+      background: var(--green);
+      color: #000;
+      border: none;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 0 22px;
+      cursor: pointer;
+      transition: box-shadow 0.2s;
+    }
+    .waitlist-submit:hover:not(:disabled) { box-shadow: 0 0 24px var(--green-glow); }
+    .waitlist-submit:disabled { opacity: 0.5; cursor: default; }
+    .waitlist-honeypot {
+      position: absolute;
+      left: -9999px;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+    }
+    .waitlist-status {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      margin-top: 12px;
+      min-height: 16px;
+      text-align: center;
+      letter-spacing: 0.5px;
+    }
+    .waitlist-status.ok    { color: var(--green); }
+    .waitlist-status.err   { color: #f87171; }
+    .waitlist-status.busy  { color: var(--text-muted); }
+
     .footer-links {
       display: flex;
       justify-content: center;
@@ -1489,6 +1559,33 @@
         <a class="btn-primary" href="https://github.com/alexanxin/tally-vault" target="_blank">View on GitHub ↗</a>
         <a class="btn-ghost" href="https://tally.lll.mk/api/signal" target="_blank">Try x402 Endpoint</a>
       </div>
+
+      <div class="waitlist-wrap">
+        <label class="waitlist-label" for="waitlistEmail">&gt; Join the waitlist</label>
+        <form class="waitlist-form" id="waitlistForm" novalidate>
+          <input
+            type="email"
+            id="waitlistEmail"
+            name="email"
+            class="waitlist-input"
+            placeholder="you@domain.com"
+            autocomplete="email"
+            required
+          >
+          <!-- Honeypot — leave empty. Bots fill every input. -->
+          <input
+            type="text"
+            name="company"
+            class="waitlist-honeypot"
+            tabindex="-1"
+            autocomplete="off"
+            aria-hidden="true"
+          >
+          <button type="submit" class="waitlist-submit" id="waitlistSubmit">Join →</button>
+        </form>
+        <div class="waitlist-status" id="waitlistStatus" aria-live="polite"></div>
+      </div>
+
       <div class="footer-links">
         <a class="footer-link" href="/story.html">Story</a>
         <a class="footer-link" href="/screenshots.html">Screenshots</a>
@@ -1508,6 +1605,69 @@
   </div>
 
   <script>
+    // waitlist form — POSTs to /api/waitlist, updates the inline status row
+    (function () {
+      const form = document.getElementById('waitlistForm');
+      if (!form) return;
+      const input = document.getElementById('waitlistEmail');
+      const submit = document.getElementById('waitlistSubmit');
+      const status = document.getElementById('waitlistStatus');
+
+      function setStatus(cls, text) {
+        status.className = 'waitlist-status ' + cls;
+        status.textContent = text;
+      }
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = new FormData(form);
+        const email = (data.get('email') || '').toString().trim();
+        const company = (data.get('company') || '').toString();
+
+        if (!email) {
+          setStatus('err', 'Email required.');
+          return;
+        }
+
+        submit.disabled = true;
+        const originalLabel = submit.textContent;
+        submit.textContent = '…';
+        setStatus('busy', 'Sending…');
+
+        try {
+          const res = await fetch('/api/waitlist', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, company }),
+          });
+          let body = {};
+          try { body = await res.json(); } catch { /* ignore */ }
+
+          if (res.ok && body.ok) {
+            setStatus('ok', "✓ You're on the list.");
+            input.value = '';
+            submit.textContent = 'Done';
+          } else {
+            const reason = (body && body.error) || ('http_' + res.status);
+            const human = {
+              invalid_email:     'That email does not look right.',
+              email_required:    'Email required.',
+              service_unavailable: 'Service is offline. Try again shortly.',
+              send_failed:       'Send failed. Try again in a moment.',
+              bad_request_body:  'Bad request.',
+            }[reason] || 'Something went wrong. Try again.';
+            setStatus('err', human);
+            submit.disabled = false;
+            submit.textContent = originalLabel;
+          }
+        } catch {
+          setStatus('err', 'Network error. Try again.');
+          submit.disabled = false;
+          submit.textContent = originalLabel;
+        }
+      });
+    })();
+
     // hamburger menu
     const hamburger = document.getElementById('navHamburger');
     const mobileMenu = document.getElementById('navMobileMenu');
