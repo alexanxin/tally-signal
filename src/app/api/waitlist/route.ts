@@ -20,7 +20,7 @@ import nodemailer from "nodemailer";
  *   EMAIL_SERVER_USER       SMTP user
  *   EMAIL_SERVER_PASSWORD   SMTP password / app-specific password
  *   EMAIL_FROM              From address (e.g. "Tally Waitlist <hello@lll.mk>")
- *   WAITLIST_TO_EMAIL       Destination inbox (defaults to akolov@gmail.com)
+ *   WAITLIST_TO_EMAIL       Destination inbox (defaults to aleksandar@lll.mk)
  *
  * If SMTP env vars are missing the route returns 503 rather than throwing,
  * so the form gives a real error instead of a stack trace.
@@ -30,7 +30,7 @@ import nodemailer from "nodemailer";
 // edge runtime would silently break SMTP.
 export const runtime = "nodejs";
 
-const TO_EMAIL = process.env.WAITLIST_TO_EMAIL ?? "akolov@gmail.com";
+const TO_EMAIL = process.env.WAITLIST_TO_EMAIL ?? "aleksandar@lll.mk";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
