@@ -1071,13 +1071,14 @@
     }
 
     /* ─────────── WAITLIST FLOATER (desktop only) ─────────── */
+    /* Lives inside .wrap so it pins to the right edge of the content column
+       instead of the viewport. Vertically aligned with the hero status pill;
+       scrolls with the page (mobile menu + footer CTA cover later scroll). */
     .waitlist-floater {
-      position: fixed;
-      /* roughly matches the hero status pill's vertical position on first load,
-         keeps the button at the same visual height while still sticking on scroll */
-      top: 132px;
-      right: 24px;
-      z-index: 60;
+      position: absolute;
+      top: 60px;
+      right: 32px;
+      z-index: 5;
       display: inline-flex;
       align-items: center;
       gap: 8px;
@@ -1287,11 +1288,10 @@
     </div>
   </nav>
 
-  <a class="waitlist-floater" href="#waitlist" data-waitlist-trigger aria-label="Join the Tally waitlist">
-    Join Waitlist ↓
-  </a>
-
   <div class="wrap">
+    <a class="waitlist-floater" href="#waitlist" data-waitlist-trigger aria-label="Join the Tally waitlist">
+      Join Waitlist ↓
+    </a>
 
     <!-- HERO -->
     <section class="hero">
