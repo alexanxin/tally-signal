@@ -1220,6 +1220,7 @@
       <a class="nav-link" href="https://youtu.be/7ksWSDN4As4" target="_blank">Demo Video ↗</a>
       <a class="nav-link" href="/deck.pdf" target="_blank">Deck ↗</a>
       <a class="nav-link nav-link-highlight" href="/integration.html">Integration</a>
+      <a class="nav-link nav-link-highlight" href="#waitlist" data-waitlist-trigger>Waitlist ↓</a>
       <div class="nav-dropdown" id="navDownloadDropdown">
         <button class="nav-dropdown-toggle nav-link-highlight" onclick="toggleNavDropdown()">
           Download
@@ -1246,6 +1247,7 @@
       <a class="nav-link" href="https://youtu.be/7ksWSDN4As4" target="_blank">Demo Video ↗</a>
       <a class="nav-link" href="/deck.pdf" target="_blank">Deck ↗</a>
       <a class="nav-link" href="/integration.html">Integration</a>
+      <a class="nav-link" href="#waitlist" data-waitlist-trigger>Waitlist ↓</a>
       <a class="nav-link" href="/tally-debug.apk" download>Download APK ↓</a>
       <a class="nav-link" href="/tally-debug-mock-nfc.apk" download>Mock NFC APK ↓</a>
       <a class="nav-link" href="https://github.com/alexanxin/tally-vault" target="_blank">GitHub ↗</a>
@@ -1349,7 +1351,8 @@
     <!-- HERO ACTIONS — full width below grid -->
     <div class="hero-actions-row">
       <div class="hero-actions-primary">
-        <a class="btn-primary" href="https://youtu.be/7ksWSDN4As4" target="_blank">Demo Video ↗</a>
+        <a class="btn-primary" href="#waitlist" data-waitlist-trigger>Join Waitlist ↓</a>
+        <a class="btn-ghost" href="https://youtu.be/7ksWSDN4As4" target="_blank">Demo Video ↗</a>
         <a class="btn-ghost" href="https://github.com/alexanxin/tally-vault" target="_blank">Repo ↗</a>
       </div>
       <div class="hero-actions-dev">
@@ -1560,7 +1563,7 @@
         <a class="btn-ghost" href="https://tally.lll.mk/api/signal" target="_blank">Try x402 Endpoint</a>
       </div>
 
-      <div class="waitlist-wrap">
+      <div class="waitlist-wrap" id="waitlist">
         <label class="waitlist-label" for="waitlistEmail">&gt; Join the waitlist</label>
         <form class="waitlist-form" id="waitlistForm" novalidate>
           <input
@@ -1605,13 +1608,40 @@
   </div>
 
   <script>
-    // waitlist form — POSTs to /api/waitlist, updates the inline status row
+    // waitlist form — POSTs to /api/waitlist, updates the inline status row.
+    // Also wires the top-nav and hero "Waitlist" triggers to scroll the form
+    // into view and focus the email input.
     (function () {
       const form = document.getElementById('waitlistForm');
       if (!form) return;
       const input = document.getElementById('waitlistEmail');
       const submit = document.getElementById('waitlistSubmit');
       const status = document.getElementById('waitlistStatus');
+      const wrap = document.getElementById('waitlist');
+
+      // Smooth-scroll triggers — any link with data-waitlist-trigger lands
+      // the user inside the form rather than just at the anchor.
+      document.querySelectorAll('[data-waitlist-trigger]').forEach((el) => {
+        el.addEventListener('click', (e) => {
+          if (!wrap) return;
+          e.preventDefault();
+          // Close the mobile menu if the click came from inside it.
+          const m = document.getElementById('navMobileMenu');
+          const h = document.getElementById('navHamburger');
+          if (m && m.classList.contains('open')) {
+            m.classList.remove('open');
+            if (h) h.classList.remove('open');
+          }
+          wrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          // Defer the focus until the scroll settles so iOS Safari does not
+          // yank the page back to the top with the keyboard pop.
+          setTimeout(() => { input.focus({ preventScroll: true }); }, 500);
+          // Reflect the anchor in the URL without an extra scroll jump.
+          if (history && history.replaceState) {
+            history.replaceState(null, '', '#waitlist');
+          }
+        });
+      });
 
       function setStatus(cls, text) {
         status.className = 'waitlist-status ' + cls;
