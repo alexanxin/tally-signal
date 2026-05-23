@@ -6,11 +6,18 @@ import nodemailer from "nodemailer";
  *
  * Tiny "join the waitlist" endpoint backing the form in the start.html
  * footer CTA. Stateless by design: no database, no dedup, no analytics.
- * Each valid submission becomes an email in the operator inbox; that's the
- * full storage layer.
+ * Each valid submission triggers two emails: a notification to the operator
+ * inbox (required, blocks the response on failure) and a welcome to the
+ * signup (best-effort, never blocks the response).
  *
  * Tradeoff: duplicates just stack in the inbox. Acceptable while the volume
  * is small. Swap in a Vercel KV dedup if it gets noisy.
+ *
+ * Tradeoff #2: sending TO an arbitrary address creates a (small) spam
+ * vector — someone enters an enemy's email, our server sends them a
+ * welcome. Honeypot + email regex are the only filters; volume is capped
+ * by Vercel + Resend rate limits. Add proper IP-based throttling via
+ * Vercel KV if it gets abused.
  *
  * Env vars (set in Vercel for tally-signal; same names as the lll.mk
  * contact form so a single set of SMTP credentials works for both projects):
@@ -57,6 +64,70 @@ function smtpConfigured(): boolean {
       process.env.EMAIL_SERVER_PASSWORD &&
       process.env.EMAIL_FROM,
   );
+}
+
+function buildWelcomeText(): string {
+  return [
+    "You're on the list. That's the full confirmation.",
+    "",
+    "Tally is a Solana wallet where a contactless bank card becomes the signing key,",
+    "including expired ones. Built for AI agents that need to spend real money",
+    "without the vault key ever touching a server.",
+    "",
+    "Three things worth a look before we ship:",
+    "",
+    "  Demo (90 seconds): https://www.youtube.com/watch?v=7ksWSDN4As4",
+    "  Code:              https://github.com/alexanxin/tally-vault",
+    "  Live x402 endpoint: https://tally.lll.mk/api/signal",
+    "",
+    "Reply to this email if you want to talk early access, integration, or push",
+    "back on the design. Goes straight to my inbox.",
+    "",
+    "Alex, building Tally",
+  ].join("\n");
+}
+
+function buildWelcomeHtml(): string {
+  // Keep inline styles minimal and email-client-safe (no flex, no grid).
+  return `
+    <div style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; background: #0b0f14; color: #e5e5e5; line-height: 1.55;">
+      <div style="font-family: monospace; font-size: 11px; color: #4ade80; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 24px;">
+        &gt; Tally Waitlist · Confirmed
+      </div>
+
+      <p style="margin: 0 0 16px 0; color: #ffffff; font-size: 18px; font-weight: 600;">
+        You're on the list. That's the full confirmation.
+      </p>
+
+      <p style="margin: 0 0 18px 0; color: #c7cdd4;">
+        Tally is a Solana wallet where a contactless bank card becomes the signing key, including expired ones. Built for AI agents that need to spend real money without the vault key ever touching a server.
+      </p>
+
+      <p style="margin: 0 0 10px 0; color: #c7cdd4;">
+        Three things worth a look before we ship:
+      </p>
+
+      <ul style="margin: 0 0 22px 0; padding-left: 20px; color: #c7cdd4;">
+        <li style="margin-bottom: 6px;">
+          <a href="https://www.youtube.com/watch?v=7ksWSDN4As4" style="color: #4ade80; text-decoration: none;">90-second demo video</a>
+        </li>
+        <li style="margin-bottom: 6px;">
+          <a href="https://github.com/alexanxin/tally-vault" style="color: #4ade80; text-decoration: none;">Code on GitHub</a>
+        </li>
+        <li style="margin-bottom: 6px;">
+          <a href="https://tally.lll.mk/api/signal" style="color: #4ade80; text-decoration: none;">Live x402 endpoint</a>
+        </li>
+      </ul>
+
+      <p style="margin: 0 0 18px 0; color: #c7cdd4;">
+        Reply to this email if you want to talk early access, integration, or push back on the design. Goes straight to my inbox.
+      </p>
+
+      <p style="margin: 0 0 0 0; color: #9aa3ad;">
+        Alex, building Tally
+      </p>
+    </div>
+  `.trim();
 }
 
 function buildEmailHtml(email: string): string {
@@ -119,17 +190,21 @@ export async function POST(req: NextRequest) {
   const smtpSecure =
     process.env.EMAIL_SERVER_SECURE === "true" || smtpPort === 465;
 
-  try {
-    const transporter = nodemailer.createTransport({
-      host: process.env.EMAIL_SERVER_HOST!,
-      port: smtpPort,
-      secure: smtpSecure,
-      auth: {
-        user: process.env.EMAIL_SERVER_USER!,
-        pass: process.env.EMAIL_SERVER_PASSWORD!,
-      },
-    });
+  // Single transporter, two sends — same SMTP connection where possible.
+  const transporter = nodemailer.createTransport({
+    host: process.env.EMAIL_SERVER_HOST!,
+    port: smtpPort,
+    secure: smtpSecure,
+    auth: {
+      user: process.env.EMAIL_SERVER_USER!,
+      pass: process.env.EMAIL_SERVER_PASSWORD!,
+    },
+  });
 
+  // ── Notification email to ops inbox — REQUIRED. Failure means the
+  //    signup is lost, so the response goes 502 and the form shows an
+  //    error. The user can retry.
+  try {
     await transporter.sendMail({
       from: process.env.EMAIL_FROM!,
       to: TO_EMAIL,
@@ -137,8 +212,6 @@ export async function POST(req: NextRequest) {
       subject: `Tally waitlist: ${email}`,
       html: buildEmailHtml(email),
     });
-
-    return NextResponse.json({ ok: true });
   } catch (err) {
     // Log the structured nodemailer fields that actually tell you what's
     // wrong: SMTP reply code, the command that failed, and the server's
@@ -166,6 +239,31 @@ export async function POST(req: NextRequest) {
       { status: 502 },
     );
   }
+
+  // ── Welcome email back to the signup — BEST-EFFORT. A failure here
+  //    means the user does not get a confirmation, but the signup is
+  //    already captured in the ops inbox, so we log and continue rather
+  //    than telling the user the whole submission failed.
+  try {
+    await transporter.sendMail({
+      from: process.env.EMAIL_FROM!,
+      to: email,
+      replyTo: TO_EMAIL,
+      subject: "You're on the Tally waitlist",
+      text: buildWelcomeText(),
+      html: buildWelcomeHtml(),
+    });
+  } catch (err) {
+    const e = err as { message?: string; code?: string; response?: string };
+    console.warn("[waitlist] welcome email skipped:", {
+      message: e?.message,
+      code: e?.code,
+      response: e?.response,
+      to: email,
+    });
+  }
+
+  return NextResponse.json({ ok: true });
 }
 
 export async function OPTIONS() {
