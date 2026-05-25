@@ -309,6 +309,12 @@
       transition: color 0.15s, background 0.15s;
     }
     .nav-dropdown-item:hover { color: var(--green); background: var(--green-dim); }
+    .nav-dropdown-item-disabled {
+      cursor: default;
+      opacity: 0.55;
+      color: var(--text-ghost);
+    }
+    .nav-dropdown-item-disabled:hover { color: var(--text-ghost); background: transparent; }
     .nav-dropdown-item-sub {
       display: block;
       padding: 0 16px 10px;
@@ -1260,10 +1266,12 @@
           <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
         <div class="nav-dropdown-menu">
-          <a class="nav-dropdown-item" href="/tally-debug.apk" download>Download APK ↓</a>
+          <a class="nav-dropdown-item" href="/tally-debug.apk" download>Android APK ↓</a>
           <span class="nav-dropdown-item-sub">Real card required. Any contactless Visa or Mastercard.</span>
-          <a class="nav-dropdown-item" href="/tally-debug-mock-nfc.apk" download>Mock NFC APK ↓</a>
+          <a class="nav-dropdown-item" href="/tally-debug-mock-nfc.apk" download>Android (Mock NFC) ↓</a>
           <span class="nav-dropdown-item-sub">No card needed. Simulates tap automatically.</span>
+          <span class="nav-dropdown-item nav-dropdown-item-disabled">iOS — in development</span>
+          <span class="nav-dropdown-item-sub">Apple's NFC stack needs per-AID whitelisting and a custom plugin. Coming soon.</span>
         </div>
       </div>
       <a class="nav-link" href="https://github.com/alexanxin/tally-vault" target="_blank">GitHub ↗</a>
@@ -1281,8 +1289,9 @@
       <a class="nav-link" href="/deck.pdf" target="_blank">Deck ↗</a>
       <a class="nav-link" href="/integration.html">Integration</a>
       <a class="nav-link" href="#waitlist" data-waitlist-trigger>Waitlist ↓</a>
-      <a class="nav-link" href="/tally-debug.apk" download>Download APK ↓</a>
-      <a class="nav-link" href="/tally-debug-mock-nfc.apk" download>Mock NFC APK ↓</a>
+      <a class="nav-link" href="/tally-debug.apk" download>Android APK ↓</a>
+      <a class="nav-link" href="/tally-debug-mock-nfc.apk" download>Android (Mock NFC) ↓</a>
+      <span class="nav-link" style="opacity: 0.55; cursor: default;">iOS — in development</span>
       <a class="nav-link" href="https://github.com/alexanxin/tally-vault" target="_blank">GitHub ↗</a>
       <a class="nav-link" href="https://x.com/tallyvault" target="_blank">@tallyvault on X ↗</a>
     </div>
@@ -1303,7 +1312,7 @@
         </h1>
         <p class="hero-subline">Tap your card, no passwords, no keys.</p>
         <div class="hero-blurb">
-          <p>Tally is a mobile app that turns any contactless bank card into a hardware signing key for a Solana wallet. Available for Android and iOS.</p>
+          <p>Tally is a mobile app that turns any contactless bank card into a hardware signing key for a Solana wallet. Android available today; iOS in active development.</p>
           <p>Every crypto wallet has the same problem. The private key lives somewhere, and wherever it lives is the attack surface. Hardware wallets solved custody but created friction. You need a device. You have to carry it. Lose it and you're locked out.</p>
           <p>The card in your wallet already has an NFC chip. Tally reads it via full EMV APDU chain, runs it through Argon2id with your biometric, and derives a signing key in RAM. Under 500ms, then it wipes. Nothing persists on any server, ever. Any contactless card works, including expired ones.</p>
           <p>We built this for AI agents, where the private key problem is worse. An agent gets a funded session wallet per task, authorized by a card tap. The vault key never leaves the device. The session key has a budget cap, and when the task ends, funds sweep back automatically. x402 micropayments are live on Solana mainnet. The physical card is the only thing that can authorize a spend.</p>
@@ -1393,12 +1402,16 @@
       <div class="hero-actions-dev">
         <span class="hero-dev-label">For developers</span>
         <span class="tip-wrap">
-          <a class="btn-ghost" href="/tally-debug.apk" download>Download APK ↓</a>
+          <a class="btn-ghost" href="/tally-debug.apk" download>Android APK ↓</a>
           <span class="tip">Android debug build. Requires a real contactless bank card (Visa / Mastercard) to sign transactions.</span>
         </span>
         <span class="tip-wrap">
-          <a class="btn-ghost" href="/tally-debug-mock-nfc.apk" download>Mock NFC APK ↓</a>
+          <a class="btn-ghost" href="/tally-debug-mock-nfc.apk" download>Android (Mock NFC) ↓</a>
           <span class="tip">Same app, no card required. Simulates a card tap automatically, for testing on devices without NFC.</span>
+        </span>
+        <span class="tip-wrap">
+          <span class="btn-ghost" style="opacity: 0.55; cursor: default;">iOS — in development</span>
+          <span class="tip">Apple's Core NFC restricts EMV access to apps that declare every card AID upfront and ship a custom plugin built on NFCTagReaderSession. We're working through it. Drop your email in the waitlist below to be told when the build is ready.</span>
         </span>
         <a class="btn-ghost" href="/integration.html">Integration</a>
         <a class="btn-ghost" href="#x402">x402 Endpoint</a>
