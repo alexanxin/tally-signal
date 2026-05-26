@@ -1268,8 +1268,10 @@
       .wrap { padding: 0 20px; }
       nav { padding: 16px 20px; }
       .nav-logo-icon img { width: 48px; height: 24px; }
-      .nav-logo-icon { width: 48px; height: 24px; }
-      .nav-logo { font-size: 0.8rem; gap: 8px; }
+      /* Reset the desktop padding-right + margin-left tuned for the 83px
+         icon; they over-constrain the 48px mobile icon and crowd "TALLY". */
+      .nav-logo-icon { width: 48px; height: 24px; padding-right: 0; margin-left: 0; }
+      .nav-logo { font-size: 0.8rem; gap: 14px; }
       .steps { grid-template-columns: 1fr; }
       .proof-grid { grid-template-columns: 1fr; }
       .stack-grid { grid-template-columns: 1fr; }
