@@ -1249,6 +1249,20 @@
       .nav-right { display: none; }
       .nav-hamburger { display: flex; }
       nav { position: relative; }
+      /* Stack the primary actions and dev actions vertically on mobile.
+         Without this both rows have flex-wrap: nowrap which forces all 7
+         buttons to fit in one line, overflowing the viewport AND squeezing
+         each button to min-content width (the IOS button collapses to a
+         narrow column where "iOS soon ↓" wraps internally into three lines). */
+      .hero-actions-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 24px;
+      }
+      .hero-actions-primary,
+      .hero-actions-dev {
+        flex-wrap: wrap;
+      }
     }
     @media (max-width: 640px) {
       .wrap { padding: 0 20px; }
