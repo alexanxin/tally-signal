@@ -989,6 +989,18 @@
       flex-shrink: 0;
       margin-top: 2px;
     }
+    /* Shipped: solid green, the most visually prominent status */
+    .roadmap-tag-shipped {
+      color: #000;
+      background: var(--green);
+      border-color: var(--green);
+    }
+    /* Planned: muted; lowest visual weight so the eye lands on shipped items first */
+    .roadmap-tag-planned {
+      color: var(--text-meta);
+      background: transparent;
+      border-color: var(--border);
+    }
 
     .roadmap-body { flex: 1; }
 
@@ -1558,38 +1570,52 @@
 
     <!-- ROADMAP -->
     <section class="roadmap-section">
-      <div class="section-label">What's next</div>
+      <div class="section-label">Roadmap</div>
       <div class="roadmap-grid">
+        <div class="roadmap-item">
+          <span class="roadmap-tag roadmap-tag-shipped">Shipped</span>
+          <div class="roadmap-body">
+            <div class="roadmap-title">UID-only card derivation</div>
+            <div class="roadmap-desc">PCI mode: the Card_Shard is derived from the card's hardware UID and a salt only. No card number ever read, no PAN in RAM. Selectable at vault creation for regulated and enterprise deployments where PAN exposure is a compliance blocker.</div>
+          </div>
+        </div>
+        <div class="roadmap-item">
+          <span class="roadmap-tag roadmap-tag-shipped">Shipped</span>
+          <div class="roadmap-body">
+            <div class="roadmap-title">Proof of human presence</div>
+            <div class="roadmap-desc">Every card tap signs a portable, hardware-bound receipt: vault, session, amount, task hash, tx, timestamp. Travels with the task across any number of agents. Verifiable offline by anyone with the vault address, or as one HTTP call to <code>tally.lll.mk/api/attest/verify</code>.</div>
+          </div>
+        </div>
+        <div class="roadmap-item">
+          <span class="roadmap-tag roadmap-tag-shipped">Shipped</span>
+          <div class="roadmap-body">
+            <div class="roadmap-title">Time-bounded policy taps</div>
+            <div class="roadmap-desc">One tap authorizes a budget and a window, not a single transaction. The agent runs autonomously within both until either runs out. End to end: deep link carries the TTL, wallet persists the expiry, agent skill reuses the session across calls without re-tapping.</div>
+          </div>
+        </div>
         <div class="roadmap-item">
           <span class="roadmap-tag">In progress</span>
           <div class="roadmap-body">
+            <div class="roadmap-title">iOS app</div>
+            <div class="roadmap-desc">Apple's NFC stack requires per-AID whitelisting and a custom Core NFC plugin. Stage 1 scaffolding (Swift plugin mirroring the Android NFC bridge, entitlements, AID whitelist for Visa / Mastercard / Amex / Discover / Maestro / UnionPay) is on main. Real-card validation lands when the test device arrives.</div>
+          </div>
+        </div>
+        <div class="roadmap-item">
+          <span class="roadmap-tag roadmap-tag-planned">Planned</span>
+          <div class="roadmap-body">
+            <div class="roadmap-title">Readable vault identity</div>
+            <div class="roadmap-desc">Counterparties send to and verify receipts against a human-readable name instead of a 32-character base58 address. The receipt becomes anchorable to your identity without exposing key material. The card stays the proof; the name becomes the anchor.</div>
+          </div>
+        </div>
+        <div class="roadmap-item">
+          <span class="roadmap-tag roadmap-tag-planned">Planned</span>
+          <div class="roadmap-body">
             <div class="roadmap-title">On-chain constrained signer</div>
-            <div class="roadmap-desc">A Solana program that enforces spend caps and program whitelists at the protocol level. Even a stolen session key cannot exceed the cap or call non-whitelisted programs.</div>
+            <div class="roadmap-desc">A Solana program that enforces spend caps and program whitelists at the protocol level. Even a stolen session key cannot exceed the cap or call non-whitelisted programs. Closes the structural moat: the chain itself becomes the third gate behind biometric and card.</div>
           </div>
         </div>
         <div class="roadmap-item">
-          <span class="roadmap-tag">Planned</span>
-          <div class="roadmap-body">
-            <div class="roadmap-title">Policy taps</div>
-            <div class="roadmap-desc">One tap authorizes a class of work, not just a single transaction. The card sets a time-bounded budget. The agent runs autonomously within it.</div>
-          </div>
-        </div>
-        <div class="roadmap-item">
-          <span class="roadmap-tag">Planned</span>
-          <div class="roadmap-body">
-            <div class="roadmap-title">Card tap as proof of human presence</div>
-            <div class="roadmap-desc">Every authorization produces a signed attestation that a real person with a real card approved this spend. Travels with the task through multi-agent pipelines as a verifiable credential.</div>
-          </div>
-        </div>
-        <div class="roadmap-item">
-          <span class="roadmap-tag">Planned</span>
-          <div class="roadmap-body">
-            <div class="roadmap-title">UID-only card derivation</div>
-            <div class="roadmap-desc">Replace PAN-based key derivation with the card's hardware serial number only. Same security model, no card number ever read. Designed for deployments where PCI compliance is a hard requirement.</div>
-          </div>
-        </div>
-        <div class="roadmap-item">
-          <span class="roadmap-tag">Planned</span>
+          <span class="roadmap-tag roadmap-tag-planned">Planned</span>
           <div class="roadmap-body">
             <div class="roadmap-title">Self-hosted x402 gateway</div>
             <div class="roadmap-desc">Run your own x402 endpoint backed by Tally's card-tap authorization. Agents pay per request, humans stay in the loop. No third-party proxy, no shared infrastructure.</div>
