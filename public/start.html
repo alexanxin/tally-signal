@@ -1002,7 +1002,11 @@
       border-color: var(--border);
     }
 
-    .roadmap-body { flex: 1; }
+    /* min-width: 0 lets this flex child shrink below its intrinsic content
+       width. Without it, an unbreakable token (long URL, base58 address, code
+       span) inside the description forces the parent wider than the viewport
+       and the whole page scrolls horizontally on mobile. */
+    .roadmap-body { flex: 1; min-width: 0; }
 
     .roadmap-title {
       font-family: var(--sans);
@@ -1017,7 +1021,13 @@
       font-size: 0.82rem;
       color: var(--text-meta);
       line-height: 1.55;
+      /* Allow long URLs and similar unbreakable strings to wrap mid-token
+         instead of overflowing the container. */
+      overflow-wrap: anywhere;
     }
+    /* Inline <code> spans (e.g. tally.lll.mk/api/attest/verify) are
+       monospace and unbreakable by default; force them to wrap. */
+    .roadmap-desc code { word-break: break-all; }
 
     /* ─────────── TECH STACK ─────────── */
     .stack-section { padding: 0 0 88px; }
