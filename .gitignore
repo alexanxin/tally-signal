@@ -5,6 +5,7 @@ node_modules/
 .vercel/
 .DS_Store
 next-env.d.ts
+tsconfig.tsbuildinfo
 
 # Stray dir created by a literal '~' path; holds a misplaced PI Chrome profile.
 # Ignored so it can never be committed to this public repo.
