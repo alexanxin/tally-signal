@@ -1350,10 +1350,10 @@
         </h1>
         <p class="hero-subline">Tap your card, no passwords, no keys.</p>
         <div class="hero-blurb">
-          <p>Tally is a mobile app that turns any contactless bank card into a hardware signing key for a Solana wallet. Android available today; iOS in active development.</p>
+          <p>Tally is a mobile app that turns a contactless bank card into a hardware signing key for a Solana wallet. Live on Android today. iOS is in active development.</p>
           <p>Every crypto wallet has the same problem. The private key lives somewhere, and wherever it lives is the attack surface. Hardware wallets solved custody but created friction. You need a device. You have to carry it. Lose it and you're locked out.</p>
           <p>The card in your wallet already has an NFC chip. Tally reads it via full EMV APDU chain, runs it through Argon2id with your biometric, and derives a signing key in RAM. Under 500ms, then it wipes. Nothing persists on any server, ever. Any contactless card works, including expired ones.</p>
-          <p>We built this for AI agents, where the private key problem is worse. An agent gets a funded session wallet per task, authorized by a card tap. The vault key never leaves the device. The session key has a budget cap, and when the task ends, funds sweep back automatically. x402 micropayments are live on Solana mainnet. The physical card is the only thing that can authorize a spend.</p>
+          <p>We built this for AI agents, where the private key problem is worse. An agent gets a funded session wallet per task, authorized by a tap. The vault key never leaves the device. The session key has a budget cap, and when the task ends, funds sweep back automatically. x402 micropayments are live on Solana mainnet. The physical object you tap is the only thing that can authorize a spend.</p>
         </div>
       </div>
 
@@ -1623,7 +1623,7 @@
           <span class="roadmap-tag">In progress</span>
           <div class="roadmap-body">
             <div class="roadmap-title">iOS app</div>
-            <div class="roadmap-desc">Apple's NFC stack requires per-AID whitelisting and a custom Core NFC plugin. Stage 1 scaffolding (Swift plugin mirroring the Android NFC bridge, entitlements, AID whitelist for Visa / Mastercard / Amex / Discover / Maestro / UnionPay) is on main. Real-card validation lands when the test device arrives.</div>
+            <div class="roadmap-desc">Bringing the Tally vault to iPhone. In active development. We'll share how it works once the approach is proven.</div>
           </div>
         </div>
         <div class="roadmap-item">
