@@ -3,3 +3,12 @@ node_modules/
 .env
 .env.local
 .vercel/
+.DS_Store
+next-env.d.ts
+
+# Stray dir created by a literal '~' path; holds a misplaced PI Chrome profile.
+# Ignored so it can never be committed to this public repo.
+/~/
+
+# Old pitch deck, not for the public site
+public/deck_old.pdf
