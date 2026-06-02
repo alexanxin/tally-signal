@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tally — Agent Integration</title>
+  <title>Tally · Agent Integration</title>
   <meta name="description" content="Connect your AI agent to Tally. Download the integration folder, configure .env, and your agent can request on-chain USDC funding with a single card tap." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -597,8 +597,8 @@
     <h1>Connect your agent<br>to <em>Tally.</em></h1>
 
     <div class="intro">
-      <p>Drop the integration folder into your agent's project. The app generates the full <code style="font-family:var(--mono);font-size:0.88em;color:var(--green);background:var(--green-dim);padding:2px 6px;">.env</code> block for you — open the Agents tab, create a new connection, tap <strong style="color:var(--text);">Copy .env block</strong>, paste. Everything pre-filled.</p>
-      <p style="margin-top:12px;">In practice: point your agent at the folder and tell it to read the contents. It figures out the rest on its own. We tested funding and x402 end-to-end by asking the agent to run both — no manual steps, no guidance needed. It just worked.</p>
+      <p>Drop the integration folder into your agent's project. The app generates the full <code style="font-family:var(--mono);font-size:0.88em;color:var(--green);background:var(--green-dim);padding:2px 6px;">.env</code> block for you. Open the Agents tab, create a new connection, tap <strong style="color:var(--text);">Copy .env block</strong>, paste. Everything pre-filled.</p>
+      <p style="margin-top:12px;">In practice: point your agent at the folder and tell it to read the contents. It figures out the rest on its own. We tested funding and x402 end-to-end by asking the agent to run both, no manual steps, no guidance needed. It just worked.</p>
     </div>
 
     <!-- FLOW -->
@@ -678,7 +678,7 @@
           <pre><code><button class="copy-btn" onclick="copyCode(this)">Copy</button><span class="cm"># SOL airdrop (replace with your vault address from Tally home screen)</span>
 solana airdrop 1 &lt;YOUR_VAULT_ADDRESS&gt; --url devnet
 
-<span class="cm"># USDC — use the Circle faucet (also creates the required USDC token account)</span>
+<span class="cm"># USDC, use the Circle faucet (also creates the required USDC token account)</span>
 <span class="cm"># https://faucet.circle.com</span></code></pre>
           <div class="note">The Circle faucet creates the USDC Associated Token Account on your vault address. This is required for fund sweeps to work. Do it once before your first session.</div>
         </div>
