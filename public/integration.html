@@ -617,7 +617,7 @@
       <div class="flow-step">
         <div class="flow-step-num">03</div>
         <div class="flow-step-label">Card tap authorizes</div>
-        <div class="flow-step-sub">Session wallet funded on-chain</div>
+        <div class="flow-step-sub">Funds a session for a set time window</div>
       </div>
       <div class="flow-step">
         <div class="flow-step-num">04</div>
@@ -712,16 +712,22 @@ python3 run_x402_demo.py</code></pre>
     <!-- QUICK USAGE -->
     <div class="section-header">Quick usage</div>
 
-    <p style="font-size:0.9rem;color:var(--text-body);margin-bottom:16px;line-height:1.7;">Request funding and execute a task:</p>
-    <pre style="margin-bottom:32px;"><code><button class="copy-btn" onclick="copyCode(this)">Copy</button><span class="kw">from</span> warm_vault_auth <span class="kw">import</span> request_funding, return_funds
+    <p style="font-size:0.9rem;color:var(--text-body);margin-bottom:16px;line-height:1.7;">Request funding and execute a task. One card tap authorizes a budget for a time window, set with <code style="font-family:var(--mono);font-size:0.85em;color:var(--green);">ttl</code> in seconds. Every call inside that window reuses the same session, no re-tap.</p>
+    <pre style="margin-bottom:32px;"><code><button class="copy-btn" onclick="copyCode(this)">Copy</button><span class="kw">from</span> warm_vault_auth <span class="kw">import</span> request_funding, is_session_active, return_funds
 
-<span class="cm"># Sends Telegram notification, waits for card tap, returns funded session</span>
+<span class="cm"># Sends Telegram notification, waits for one card tap.</span>
+<span class="cm"># ttl=3600 means the tap authorizes spending for the next hour.</span>
 session = request_funding(
     amount_usdc=<span class="nm">5.0</span>,
     task_description=<span class="st">"Research flight prices to Tokyo"</span>,
+    ttl=<span class="nm">3600</span>,
 )
 
-<span class="cm"># Agent executes tasks using session wallet...</span>
+<span class="cm"># Reuse the session for every call inside the window. Only re-tap once it expires.</span>
+<span class="kw">while</span> work_remaining():
+    <span class="kw">if</span> <span class="kw">not</span> is_session_active(session):
+        session = request_funding(amount_usdc=<span class="nm">5.0</span>, task_description=<span class="st">"more work"</span>, ttl=<span class="nm">3600</span>)
+    do_one_call(session)
 
 <span class="cm"># Sweep residual back to vault when done</span>
 return_funds(session)</code></pre>
@@ -747,7 +753,7 @@ result = request_with_payment(
       <h2>What's in the zip</h2>
       <div class="file-item">
         <div class="file-name">warm_vault_auth.py</div>
-        <div class="file-desc">Core skill: request_funding, check_balance, return_funds, request_with_payment</div>
+        <div class="file-desc">Core skill: request_funding (with ttl), is_session_active, check_balance, return_funds, request_with_payment</div>
       </div>
       <div class="file-item">
         <div class="file-name">tg_bot.py</div>
@@ -776,6 +782,10 @@ result = request_with_payment(
       <div class="file-item">
         <div class="file-name">run_test.py</div>
         <div class="file-desc">Smoke test: request funding and verify on-chain balance</div>
+      </div>
+      <div class="file-item">
+        <div class="file-name">test_session_policy.py</div>
+        <div class="file-desc">Unit tests for the time-bounded policy taps: ttl validation and is_session_active</div>
       </div>
       <div class="file-item">
         <div class="file-name">run_return_funds.py</div>
