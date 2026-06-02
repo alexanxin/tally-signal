@@ -91,7 +91,7 @@ The server polls the RPC node up to 4 times (8 seconds) to handle propagation la
 The signature on a PoP token only proves "someone with this secret key signed these bytes." A serious verifier needs more. This endpoint runs the five checks documented in [tally-vault README → Proof of Presence](https://github.com/alexanxin/tally-vault#proof-of-presence):
 
 1. Ed25519 signature against the **expected vault pubkey** (which the caller supplies out-of-band, never trusted from the token itself).
-2. Cross-check that the payload's `vault` field equals the expected vault — catches substitution by a malicious intermediary.
+2. Cross-check that the payload's `vault` field equals the expected vault, which catches substitution by a malicious intermediary.
 3. Optional binding: payload `session` equals the session pubkey the agent is presenting from.
 4. On-chain settlement: fetches `txSig` and confirms a real USDC or SOL transfer of `amount` from `vault` to `session` actually landed. This is the load-bearing check; money moved.
 5. Freshness: payload `ts` is within `ttlSeconds` of now.
@@ -123,7 +123,7 @@ curl -X POST https://tally.lll.mk/api/attest/verify \
 ### Response
 
 ```jsonc
-// 200 — fully verified
+// 200, fully verified
 {
   "valid": true,
   "checks": {
@@ -138,7 +138,7 @@ curl -X POST https://tally.lll.mk/api/attest/verify \
   "note": "Nonce dedup (step 7) is verifier-side policy; this endpoint does not maintain a seen-set across requests."
 }
 
-// 200 — any check failed
+// 200, any check failed
 {
   "valid": false,
   "reason": "sig_verify_failed" | "vault_mismatch" | "session_mismatch"
@@ -149,6 +149,24 @@ curl -X POST https://tally.lll.mk/api/attest/verify \
 ```
 
 `GET /api/attest/verify` returns the request schema as JSON with HTTP 405; useful for `curl`-ing the docs.
+
+---
+
+## Other routes
+
+**`GET /api/download/{variant}`** is a counted download. It increments a Vercel KV counter, then 307-redirects to the APK. Variants: `android` (real card required) and `android-mock` (simulated tap). The counter and the optional notification email run in an `after()` block, so the redirect goes out immediately and neither a KV outage nor SMTP latency can delay the download.
+
+**`POST /api/waitlist`** is the website signup. It validates the email and notifies the operator over SMTP. Backs the waitlist form on every page, and includes a honeypot field for basic bot filtering.
+
+**Environment variables (in addition to the `SIGNAL_*` set above):**
+
+| Variable | Used by | Description |
+|----------|---------|-------------|
+| `KV_REST_API_URL`, `KV_REST_API_TOKEN` | download counter | Vercel KV (Upstash Redis). The counter is best-effort; downloads work even if KV is unavailable. |
+| `EMAIL_SERVER_HOST` / `_PORT` / `_USER` / `_PASSWORD` | waitlist, download notify | SMTP transport (nodemailer). |
+| `EMAIL_FROM` | waitlist, download notify | From address for outgoing mail. |
+| `WAITLIST_TO_EMAIL` | waitlist, download notify | Operator inbox for signup and download notifications. |
+| `DOWNLOAD_EMAIL_NOTIFY` | download | Set `true` to email the operator on each download. Default off. Flip off once downloads get noisy. |
 
 ---
 
