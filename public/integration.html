@@ -702,7 +702,7 @@ python3 run_x402_demo.py</code></pre>
 → Waiting for propagation...
 → GET /api/signal + X-Tally-Session + X-Tally-Tx
 ← 200 OK
-   signal: BULLISH | SOL/USDC | Entry: $86.49 | RR: 1:1.7
+   signal: BULLISH | SOL/USDC | entry · target · stop loss · R:R returned
 → Funds swept back to vault</code></pre>
         </div>
       </div>
@@ -790,6 +790,18 @@ result = request_with_payment(
       <div class="file-item">
         <div class="file-name">run_return_funds.py</div>
         <div class="file-desc">Sweep residual USDC back to vault from an existing session</div>
+      </div>
+      <div class="file-item">
+        <div class="file-name">run_send_only.py</div>
+        <div class="file-desc">Send-only: transfer USDC from a session that run_test.py already funded, no new card tap</div>
+      </div>
+      <div class="file-item">
+        <div class="file-name">run_spend_3to2.py</div>
+        <div class="file-desc">Demo variant: request 3 USDC via card tap, send 2 to a destination address</div>
+      </div>
+      <div class="file-item">
+        <div class="file-name">run_spend_test.py</div>
+        <div class="file-desc">End-to-end variant: request 2 USDC via card tap, send 1 USDC on-chain</div>
       </div>
     </div>
 
