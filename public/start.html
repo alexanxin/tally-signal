@@ -1029,6 +1029,115 @@
        monospace and unbreakable by default; force them to wrap. */
     .roadmap-desc code { word-break: break-all; }
 
+    /* ─────────── DEV LOG ─────────── */
+    .devlog-section { padding: 0 0 88px; }
+
+    .devlog-list {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+    /* vertical timeline rail */
+    .devlog-list::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 6px;
+      bottom: 6px;
+      width: 1px;
+      background: linear-gradient(to bottom, var(--green-glow), var(--border-dim) 65%, transparent);
+    }
+
+    .devlog-entry {
+      position: relative;
+      padding: 0 0 34px 40px;
+    }
+    .devlog-entry:last-child { padding-bottom: 0; }
+
+    /* node dot on the rail */
+    .devlog-entry::before {
+      content: '';
+      position: absolute;
+      left: 2px;
+      top: 4px;
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+    }
+    .devlog-entry-latest::before {
+      border-color: var(--green);
+      background: var(--green);
+      box-shadow: 0 0 0 4px var(--green-dim), 0 0 14px var(--green-glow);
+    }
+
+    .devlog-head {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      flex-wrap: wrap;
+      margin-bottom: 2px;
+    }
+    .devlog-ver {
+      font-family: var(--mono);
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: var(--green);
+      background: var(--green-dim);
+      border: 1px solid var(--border);
+      padding: 2px 9px;
+    }
+    .devlog-latest-tag {
+      font-family: var(--mono);
+      font-size: 0.56rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #000;
+      background: var(--green);
+      padding: 3px 7px;
+      font-weight: 700;
+    }
+    .devlog-date {
+      font-family: var(--mono);
+      font-size: 0.64rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-meta);
+    }
+    .devlog-title {
+      font-family: var(--display);
+      font-size: 1.12rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      margin: 7px 0 12px;
+    }
+    .devlog-changes {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    .devlog-changes li {
+      position: relative;
+      padding-left: 18px;
+      font-size: 0.85rem;
+      line-height: 1.55;
+      color: var(--text-body);
+      /* keep long unbreakable strings from forcing horizontal scroll on mobile */
+      overflow-wrap: anywhere;
+    }
+    .devlog-changes li::before {
+      content: '›';
+      position: absolute;
+      left: 0;
+      top: 0;
+      color: var(--green);
+      font-weight: 700;
+    }
+
     /* ─────────── TECH STACK ─────────── */
     .stack-section { padding: 0 0 88px; }
 
@@ -1295,6 +1404,7 @@
     <div class="nav-right">
       <a class="nav-link" href="/story.html">Story</a>
       <a class="nav-link" href="/screenshots.html">Screenshots</a>
+      <a class="nav-link" href="#devlog">Dev log</a>
       <a class="nav-link" href="https://youtu.be/7ksWSDN4As4" target="_blank">Demo Video ↗</a>
       <a class="nav-link" href="/deck.pdf" target="_blank">Deck ↗</a>
       <a class="nav-link nav-link-highlight" href="/integration.html">Integration</a>
@@ -1304,6 +1414,7 @@
           <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
         <div class="nav-dropdown-menu">
+          <span class="nav-dropdown-item-sub" style="color: var(--green); letter-spacing: 1px; text-transform: uppercase; font-family: var(--mono); border-bottom: 1px solid var(--border-dim); padding-bottom: 9px; margin-bottom: 4px;">Latest build · v1.6.0</span>
           <a class="nav-dropdown-item" href="/api/download/android">Android APK ↓</a>
           <span class="nav-dropdown-item-sub">Real card required. Any contactless Visa or Mastercard.</span>
           <a class="nav-dropdown-item" href="/api/download/android-mock">Android Mock ↓</a>
@@ -1323,6 +1434,7 @@
     <div class="nav-mobile-menu" id="navMobileMenu">
       <a class="nav-link" href="/story.html">Story</a>
       <a class="nav-link" href="/screenshots.html">Screenshots</a>
+      <a class="nav-link" href="#devlog">Dev log</a>
       <a class="nav-link" href="https://youtu.be/7ksWSDN4As4" target="_blank">Demo Video ↗</a>
       <a class="nav-link" href="/deck.pdf" target="_blank">Deck ↗</a>
       <a class="nav-link" href="/integration.html">Integration</a>
@@ -1594,6 +1706,106 @@
 
     <hr class="section-divider" />
 
+    <!-- DEV LOG -->
+    <section class="devlog-section" id="devlog">
+      <div class="section-label">Dev log</div>
+      <div class="devlog-list">
+
+        <div class="devlog-entry devlog-entry-latest">
+          <div class="devlog-head">
+            <span class="devlog-ver">v1.6.0</span>
+            <span class="devlog-latest-tag">Latest</span>
+            <span class="devlog-date">June 5, 2026</span>
+          </div>
+          <div class="devlog-title">Agents that ask, then spend</div>
+          <ul class="devlog-changes">
+            <li>Agents can now propose a budget. You get a notification, open one screen, and approve or edit the amount with a single card tap.</li>
+            <li>Unknown-agent warning: if a request comes from a wallet you have not connected before, Tally flags it.</li>
+            <li>A unified card-tap screen across every approval, clearer and consistent.</li>
+            <li>Recovery guidance added to the 24-word backup screen.</li>
+          </ul>
+        </div>
+
+        <div class="devlog-entry">
+          <div class="devlog-head">
+            <span class="devlog-ver">v1.5.0</span>
+            <span class="devlog-date">June 3, 2026</span>
+          </div>
+          <div class="devlog-title">Standing agent budgets</div>
+          <ul class="devlog-changes">
+            <li>Pre-authorize a capped, time-boxed budget for an agent with one card tap. The agent then pays directly within that budget, no further taps.</li>
+            <li>Money stays in your vault until the moment of each payment. Nothing sits in a hot wallet.</li>
+            <li>When the window closes, the next payment is rejected on-chain and the unused cap stays put.</li>
+            <li>Revoke any agent, or revoke all, from the Connections tab.</li>
+          </ul>
+        </div>
+
+        <div class="devlog-entry">
+          <div class="devlog-head">
+            <span class="devlog-ver">v1.4.0</span>
+            <span class="devlog-date">May 27, 2026</span>
+          </div>
+          <div class="devlog-title">Safer setup</div>
+          <ul class="devlog-changes">
+            <li>Tally now checks your device can do everything a vault needs before you create one, so setup never half-completes on unsupported hardware.</li>
+          </ul>
+        </div>
+
+        <div class="devlog-entry">
+          <div class="devlog-head">
+            <span class="devlog-ver">v1.3.0</span>
+            <span class="devlog-date">May 24, 2026</span>
+          </div>
+          <div class="devlog-title">Solana Pay and reliability</div>
+          <ul class="devlog-changes">
+            <li>Solana Pay support: pay any Solana Pay link or QR, with memo passthrough.</li>
+            <li>Fixed a cold-start issue that briefly showed a zero balance.</li>
+            <li>Sending USDC to a brand-new address now tops up the tiny amount of SOL it needs automatically.</li>
+            <li>Fresh app icon.</li>
+          </ul>
+        </div>
+
+        <div class="devlog-entry">
+          <div class="devlog-head">
+            <span class="devlog-ver">v1.2.0</span>
+            <span class="devlog-date">May 20, 2026</span>
+          </div>
+          <div class="devlog-title">Spending windows</div>
+          <ul class="devlog-changes">
+            <li>Time-bounded approvals: authorize spending for a set window, end to end across the wallet and the agent skill.</li>
+          </ul>
+        </div>
+
+        <div class="devlog-entry">
+          <div class="devlog-head">
+            <span class="devlog-ver">v1.1.0</span>
+            <span class="devlog-date">May 14, 2026</span>
+          </div>
+          <div class="devlog-title">Privacy and proof</div>
+          <ul class="devlog-changes">
+            <li>PCI mode: derive your key from the card chip ID alone. The card number is never read or stored.</li>
+            <li>Proof-of-Presence: a card tap signs a portable receipt that anyone can verify, no account needed.</li>
+          </ul>
+        </div>
+
+        <div class="devlog-entry">
+          <div class="devlog-head">
+            <span class="devlog-ver">v1.0.0</span>
+            <span class="devlog-date">May 11, 2026</span>
+          </div>
+          <div class="devlog-title">Tally launch</div>
+          <ul class="devlog-changes">
+            <li>A Solana wallet where your contactless card is the signing key. Tap to sign, no passwords, no seed phrase to type.</li>
+            <li>x402 payments live on mainnet.</li>
+            <li>Built so AI agents can spend real money without your vault key ever touching a server.</li>
+          </ul>
+        </div>
+
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
     <!-- ROADMAP -->
     <section class="roadmap-section">
       <div class="section-label">Roadmap</div>
@@ -1627,10 +1839,10 @@
           </div>
         </div>
         <div class="roadmap-item">
-          <span class="roadmap-tag">In progress</span>
+          <span class="roadmap-tag roadmap-tag-shipped">Shipped</span>
           <div class="roadmap-body">
             <div class="roadmap-title">On-chain agent budgets</div>
-            <div class="roadmap-desc">One card tap grants an agent a spend cap and an expiry enforced on-chain, built on Solana's audited allowances program. The agent spends within the budget on its own while the funds never leave your cold vault, and you can revoke one agent or all of them instantly. Validated end to end on devnet.</div>
+            <div class="roadmap-desc">One card tap grants an agent a spend cap and an expiry enforced on-chain, built on Solana's allowances program. The agent spends within the budget on its own while the funds never leave your cold vault, and you can revoke one agent or all of them instantly. An agent can also propose a budget that you approve from a single notification.</div>
           </div>
         </div>
         <div class="roadmap-item">
