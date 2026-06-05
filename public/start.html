@@ -433,12 +433,12 @@
     .hero-dev-label {
       font-family: var(--mono);
       font-size: 0.6rem;
-      letter-spacing: 2px;
+      letter-spacing: 3px;
       text-transform: uppercase;
-      color: var(--text-ghost);
+      color: var(--text-meta);
       white-space: nowrap;
       position: absolute;
-      top: -8px;
+      top: -10px;
       left: 0;
     }
 
@@ -500,6 +500,7 @@
     .btn-primary {
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 8px;
       background: var(--green);
       color: #000;
@@ -508,6 +509,7 @@
       font-weight: 700;
       letter-spacing: 1.5px;
       text-transform: uppercase;
+      white-space: nowrap;
       padding: 14px 24px;
       text-decoration: none;
       transition: box-shadow 0.2s, transform 0.15s;
@@ -516,10 +518,13 @@
       box-shadow: 0 0 32px var(--green-glow);
       transform: translateY(-1px);
     }
+    /* Hero CTA: wider so the green Demo Video button reads as the lead action. */
+    .btn-hero-cta { padding-left: 44px; padding-right: 44px; }
 
     .btn-ghost {
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 8px;
       border: 1px solid var(--border);
       color: var(--text-body);
@@ -527,6 +532,7 @@
       font-size: 0.75rem;
       letter-spacing: 1.5px;
       text-transform: uppercase;
+      white-space: nowrap;
       padding: 14px 24px;
       text-decoration: none;
       transition: border-color 0.2s, color 0.2s;
@@ -1358,11 +1364,10 @@
       .nav-right { display: none; }
       .nav-hamburger { display: flex; }
       nav { position: relative; }
-      /* Stack the primary actions and dev actions vertically on mobile.
-         Without this both rows have flex-wrap: nowrap which forces all 7
-         buttons to fit in one line, overflowing the viewport AND squeezing
-         each button to min-content width (the IOS button collapses to a
-         narrow column where "iOS soon ↓" wraps internally into three lines). */
+      /* Stack the primary action and dev actions vertically on mobile.
+         On desktop both rows are flex-wrap: nowrap; on a narrow viewport that
+         would overflow, so here we stack and let the dev group wrap into a
+         tidy grid of full buttons. */
       .hero-actions-row {
         flex-direction: column;
         align-items: stretch;
@@ -1544,8 +1549,7 @@
     <!-- HERO ACTIONS — full width below grid -->
     <div class="hero-actions-row">
       <div class="hero-actions-primary">
-        <a class="btn-primary" href="https://youtu.be/7ksWSDN4As4" target="_blank">Demo Video ↗</a>
-        <a class="btn-ghost" href="https://github.com/alexanxin/tally-vault" target="_blank">Repo ↗</a>
+        <a class="btn-primary btn-hero-cta" href="https://youtu.be/7ksWSDN4As4" target="_blank">Demo Video ↗</a>
       </div>
       <div class="hero-actions-dev">
         <span class="hero-dev-label">For developers</span>
@@ -1556,10 +1560,6 @@
         <span class="tip-wrap">
           <a class="btn-ghost" href="/api/download/android-mock">Android Mock ↓</a>
           <span class="tip">Same app, no card required. Simulates a card tap automatically, for testing on devices without NFC.</span>
-        </span>
-        <span class="tip-wrap">
-          <a class="btn-ghost" style="opacity: 0.7;" href="#waitlist" data-waitlist-trigger>iOS soon ↓</a>
-          <span class="tip">Apple's Core NFC restricts EMV access to apps that declare every card AID upfront and ship a custom plugin built on NFCTagReaderSession. We're working through it. Tap to join the waitlist and we'll let you know when the build is ready.</span>
         </span>
         <a class="btn-ghost" href="/integration.html">Integration</a>
         <a class="btn-ghost" href="#x402">x402 Endpoint</a>
