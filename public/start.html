@@ -114,6 +114,37 @@
       padding: 0 32px;
     }
 
+    /* ─────────── UPDATE NOTICE ─────────── */
+    .update-notice {
+      position: relative;
+      z-index: 9;
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 14px 32px;
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      background: rgba(251, 191, 36, 0.06);
+      border-bottom: 1px solid rgba(251, 191, 36, 0.25);
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      line-height: 1.55;
+      color: var(--text-body);
+    }
+    .update-notice-tag {
+      flex-shrink: 0;
+      color: var(--amber);
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .update-notice strong { color: var(--text); font-weight: 600; }
+    .update-notice a { color: var(--amber); text-decoration: underline; text-underline-offset: 3px; }
+    .update-notice a:hover { color: var(--text); }
+    @media (max-width: 720px) {
+      .update-notice { flex-direction: column; gap: 6px; padding: 12px 24px; font-size: 0.74rem; }
+    }
+
     /* ─────────── NAV ─────────── */
     nav {
       position: relative;
@@ -1419,7 +1450,7 @@
           <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
         <div class="nav-dropdown-menu">
-          <span class="nav-dropdown-item-sub" style="color: var(--green); letter-spacing: 1px; text-transform: uppercase; font-family: var(--mono); border-bottom: 1px solid var(--border-dim); padding-bottom: 9px; margin-bottom: 4px;">Latest build · v1.6.1</span>
+          <span class="nav-dropdown-item-sub" style="color: var(--green); letter-spacing: 1px; text-transform: uppercase; font-family: var(--mono); border-bottom: 1px solid var(--border-dim); padding-bottom: 9px; margin-bottom: 4px;">Latest build · v1.6.2</span>
           <a class="nav-dropdown-item" href="/api/download/android">Android APK ↓</a>
           <span class="nav-dropdown-item-sub">Real card required. Any contactless Visa or Mastercard.</span>
           <a class="nav-dropdown-item" href="/api/download/android-mock">Android Mock ↓</a>
@@ -1449,6 +1480,17 @@
       <a class="nav-link" href="https://x.com/tallyvault" target="_blank">@tallyvault on X ↗</a>
     </div>
   </nav>
+
+  <!-- UPDATE NOTICE -->
+  <div class="update-notice">
+    <span class="update-notice-tag">⚠ Heads-up</span>
+    <span>
+      A coming update changes how Tally secures your vault. Before you install it:
+      <strong>save your 24-word recovery phrase</strong> and
+      <strong>sweep funds from session, personal, and burner wallets back to your main vault</strong>.
+      The update will ask you to restore your main vault from the phrase once. <a href="#devlog">Details in the dev log</a>.
+    </span>
+  </div>
 
   <div class="wrap">
     <a class="waitlist-floater" href="#waitlist" data-waitlist-trigger aria-label="Join the Tally waitlist">
@@ -1711,8 +1753,22 @@
 
         <div class="devlog-entry devlog-entry-latest">
           <div class="devlog-head">
-            <span class="devlog-ver">v1.6.1</span>
+            <span class="devlog-ver">v1.6.2</span>
             <span class="devlog-latest-tag">Latest</span>
+            <span class="devlog-date">June 10, 2026</span>
+          </div>
+          <div class="devlog-title">Read this before the next update</div>
+          <ul class="devlog-changes">
+            <li>The next update adds a stronger hardware lock on your vault key. Because of how Android protects keys, it will ask you to restore your main vault from your 24-word recovery phrase the first time you open it.</li>
+            <li>Before you update: make sure your 24-word recovery phrase is saved somewhere safe. Your main vault returns with the same address and the same funds after you restore it.</li>
+            <li>Also before you update: move any money out of your session, personal, and burner wallets back into your main vault. Those wallet keys cannot be restored from the recovery phrase, so sweep them first or those funds will be stranded.</li>
+            <li>More hardening landed too: your vault key and saved tokens now live in the device secure store, the key-reveal screen blocks screenshots, and the whole app stays locked behind your fingerprint.</li>
+          </ul>
+        </div>
+
+        <div class="devlog-entry">
+          <div class="devlog-head">
+            <span class="devlog-ver">v1.6.1</span>
             <span class="devlog-date">June 8, 2026</span>
           </div>
           <div class="devlog-title">Fixes and a fuller history</div>
