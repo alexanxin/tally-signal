@@ -1450,7 +1450,7 @@
           <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
         <div class="nav-dropdown-menu">
-          <span class="nav-dropdown-item-sub" style="color: var(--green); letter-spacing: 1px; text-transform: uppercase; font-family: var(--mono); border-bottom: 1px solid var(--border-dim); padding-bottom: 9px; margin-bottom: 4px;">Latest build · v1.6.2</span>
+          <span class="nav-dropdown-item-sub" style="color: var(--green); letter-spacing: 1px; text-transform: uppercase; font-family: var(--mono); border-bottom: 1px solid var(--border-dim); padding-bottom: 9px; margin-bottom: 4px;">Latest build · v1.7.0</span>
           <a class="nav-dropdown-item" href="/api/download/android">Android APK ↓</a>
           <span class="nav-dropdown-item-sub">Real card required. Any contactless Visa or Mastercard.</span>
           <a class="nav-dropdown-item" href="/api/download/android-mock">Android Mock ↓</a>
@@ -1483,12 +1483,12 @@
 
   <!-- UPDATE NOTICE -->
   <div class="update-notice">
-    <span class="update-notice-tag">⚠ Heads-up</span>
+    <span class="update-notice-tag">⚠ v1.7.0 is live</span>
     <span>
-      A coming update changes how Tally secures your vault. Before you install it:
-      <strong>save your 24-word recovery phrase</strong> and
-      <strong>sweep funds from session, personal, and burner wallets back to your main vault</strong>.
-      The update will ask you to restore your main vault from the phrase once. <a href="#devlog">Details in the dev log</a>.
+      Updating from an older version? The app will ask you to
+      <strong>restore your vault from your 24-word recovery phrase</strong> once —
+      same address, same funds. Then use <strong>Scan for wallets</strong> to bring
+      back your personal and burner wallets. <a href="#devlog">Details in the dev log</a>.
     </span>
   </div>
 
@@ -1753,8 +1753,25 @@
 
         <div class="devlog-entry devlog-entry-latest">
           <div class="devlog-head">
-            <span class="devlog-ver">v1.6.2</span>
+            <span class="devlog-ver">v1.7.0</span>
             <span class="devlog-latest-tag">Latest</span>
+            <span class="devlog-date">June 12, 2026</span>
+          </div>
+          <div class="devlog-title">Hardware-locked vault key</div>
+          <ul class="devlog-changes">
+            <li>Your vault key is now sealed in the device secure hardware and only released after a fresh fingerprint or face check. Even a compromised phone cannot reconstruct it without you present.</li>
+            <li>Updating from an older version: the app asks you to restore your vault from your 24-word recovery phrase once. Same address, same funds.</li>
+            <li>New personal and session wallets are derived from your recovery phrase. Scan for wallets finds the ones holding funds and brings them back, even on a brand-new phone.</li>
+            <li>Stake your SOL: convert to JupSOL and back instantly from the Convert page, no epoch wait.</li>
+            <li>Every holding on one screen: the Home page shows your full portfolio with a combined USD total, and each token can be sent or converted with a tap.</li>
+            <li>Swaps and staking include a small Tally fee (0.75% and 0.50%) that funds ongoing maintenance. Sends, receives, and agent payments stay free.</li>
+            <li>Found a credential-storage bug in a widely used plugin, patched it in this release, and reported it to the maintainers. The two-part key design meant nothing was exposed, and the recovery phrase rebuilds everything.</li>
+          </ul>
+        </div>
+
+        <div class="devlog-entry">
+          <div class="devlog-head">
+            <span class="devlog-ver">v1.6.2</span>
             <span class="devlog-date">June 10, 2026</span>
           </div>
           <div class="devlog-title">Read this before the next update</div>
