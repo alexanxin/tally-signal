@@ -1487,8 +1487,11 @@
     <span>
       Updating from an older version? The app will ask you to
       <strong>restore your vault from your 24-word recovery phrase</strong> once —
-      same address, same funds. Then use <strong>Scan for wallets</strong> to bring
-      back your personal and burner wallets. <a href="#devlog">Details in the dev log</a>.
+      same address, same funds. <strong>Scan for wallets</strong> brings back
+      personal and burner wallets <strong>created on v1.7.0 or later</strong>.
+      Wallets made on older versions use independent keys the phrase cannot rebuild —
+      <strong>sweep their funds back to your main vault before updating</strong>.
+      <a href="#devlog">Details in the dev log</a>.
     </span>
   </div>
 
@@ -1761,7 +1764,7 @@
           <ul class="devlog-changes">
             <li>Your vault key is now sealed in the device secure hardware and only released after a fresh fingerprint or face check. Even a compromised phone cannot reconstruct it without you present.</li>
             <li>Updating from an older version: the app asks you to restore your vault from your 24-word recovery phrase once. Same address, same funds.</li>
-            <li>New personal and session wallets are derived from your recovery phrase. Scan for wallets finds the ones holding funds and brings them back, even on a brand-new phone.</li>
+            <li>New personal and session wallets are derived from your recovery phrase. Scan for wallets finds the ones holding funds and brings them back, even on a brand-new phone. Note: this only covers wallets created on v1.7.0 or later — wallets made on older versions use independent keys, so sweep their funds to your main vault first.</li>
             <li>Stake your SOL: convert to JupSOL and back instantly from the Convert page, no epoch wait.</li>
             <li>Every holding on one screen: the Home page shows your full portfolio with a combined USD total, and each token can be sent or converted with a tap.</li>
             <li>Swaps and staking include a small Tally fee (0.75% and 0.50%) that funds ongoing maintenance. Sends, receives, and agent payments stay free.</li>
