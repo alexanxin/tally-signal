@@ -206,25 +206,31 @@ async function verifyPaymentTx(txSig: string, expectedDestination: string, minAm
     };
   }
 
+  type ParsedIx = {
+    parsed?: {
+      type?: string;
+      info?: {
+        // transferChecked fields
+        destination?: string;
+        mint?: string;
+        tokenAmount?: { uiAmount?: number; amount?: string };
+        // transfer fields (no mint — SPL transfer without check)
+        amount?: string;
+        source?: string;
+      };
+    };
+  };
   const tx = rawTx as {
     blockTime?: number;
-    meta?: { err: unknown };
+    meta?: {
+      err: unknown;
+      // CPI'd transfers (e.g. the subscriptions program's transferFixed in
+      // budget mode) appear here, NOT in the top-level message instructions.
+      innerInstructions?: Array<{ instructions?: ParsedIx[] }>;
+    };
     transaction?: {
       message?: {
-        instructions?: Array<{
-          parsed?: {
-            type?: string;
-            info?: {
-              // transferChecked fields
-              destination?: string;
-              mint?: string;
-              tokenAmount?: { uiAmount?: number; amount?: string };
-              // transfer fields (no mint — SPL transfer without check)
-              amount?: string;
-              source?: string;
-            };
-          };
-        }>;
+        instructions?: ParsedIx[];
       };
     };
   };
@@ -246,7 +252,12 @@ async function verifyPaymentTx(txSig: string, expectedDestination: string, minAm
   // For plain "transfer" we verify the destination ATA belongs to our payment
   // wallet AND that the ATA's mint is USDC — this covers the mint check without
   // relying on the instruction's info object having a mint field.
-  const instructions = tx.transaction?.message?.instructions ?? [];
+  // Inspect BOTH top-level instructions (ask-mode: a direct SPL transfer) AND
+  // inner/CPI instructions (budget-mode: transferFixed moves USDC via the
+  // subscriptions program, so the SPL transfer is nested in innerInstructions).
+  const topIxs = tx.transaction?.message?.instructions ?? [];
+  const innerIxs = (tx.meta?.innerInstructions ?? []).flatMap(ii => ii.instructions ?? []);
+  const instructions = [...topIxs, ...innerIxs];
   for (const ix of instructions) {
     const parsed = ix.parsed;
     if (!parsed) continue;
