@@ -1450,7 +1450,7 @@
           <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
         <div class="nav-dropdown-menu">
-          <span class="nav-dropdown-item-sub" style="color: var(--green); letter-spacing: 1px; text-transform: uppercase; font-family: var(--mono); border-bottom: 1px solid var(--border-dim); padding-bottom: 9px; margin-bottom: 4px;">Latest build · v1.7.0</span>
+          <span class="nav-dropdown-item-sub" style="color: var(--green); letter-spacing: 1px; text-transform: uppercase; font-family: var(--mono); border-bottom: 1px solid var(--border-dim); padding-bottom: 9px; margin-bottom: 4px;">Latest build · v1.8.0</span>
           <a class="nav-dropdown-item" href="/api/download/android">Android APK ↓</a>
           <span class="nav-dropdown-item-sub">Real card required. Any contactless Visa or Mastercard.</span>
           <a class="nav-dropdown-item" href="/api/download/android-mock">Android Mock ↓</a>
@@ -1483,9 +1483,10 @@
 
   <!-- UPDATE NOTICE -->
   <div class="update-notice">
-    <span class="update-notice-tag">⚠ v1.7.0 is live</span>
+    <span class="update-notice-tag">⚠ v1.8.0 is live</span>
     <span>
-      Updating from an older version? The app will ask you to
+      Already on v1.7.0? This installs right over it — <strong>same vault, no restore needed</strong>.
+      Coming from a version <strong>before v1.7.0</strong>? The app will ask you to
       <strong>restore your vault from your 24-word recovery phrase</strong> once —
       same address, same funds. <strong>Scan for wallets</strong> brings back
       personal and burner wallets <strong>created on v1.7.0 or later</strong>.
@@ -1756,8 +1757,24 @@
 
         <div class="devlog-entry devlog-entry-latest">
           <div class="devlog-head">
-            <span class="devlog-ver">v1.7.0</span>
+            <span class="devlog-ver">v1.8.0</span>
             <span class="devlog-latest-tag">Latest</span>
+            <span class="devlog-date">June 17, 2026</span>
+          </div>
+          <div class="devlog-title">Receive privately, and a steadier wallet</div>
+          <ul class="devlog-changes">
+            <li>Receive privately. Tap Receive privately and Tally hands you a fresh, one-time address that can't be tied back to your main wallet or to your other private receipts. Money sent there lands in a separate Private balance on your Home screen, and you spend it from Send like any other funds.</li>
+            <li>A new Earn screen puts idle SOL to work: stake to JupSOL in one tap and unstake whenever you want, no epoch wait.</li>
+            <li>Transactions confirm reliably. Sends, swaps, staking, and wallet sweeps no longer hang on the tap screen, the app now follows each one on-chain until it lands. Sweeping a session wallet asks for your fingerprint just once.</li>
+            <li>The Home screen loads faster: your whole portfolio and its USD total now come from a single price lookup, so balances fill in quickly even on mainnet.</li>
+            <li>Share your receiving address through your phone's own share menu.</li>
+            <li>Agent and sweep fixes: revoking an agent now clears every approval it held, and sweeping a wallet brings back all of your tokens, not just USDC.</li>
+          </ul>
+        </div>
+
+        <div class="devlog-entry">
+          <div class="devlog-head">
+            <span class="devlog-ver">v1.7.0</span>
             <span class="devlog-date">June 12, 2026</span>
           </div>
           <div class="devlog-title">Hardware-locked vault key</div>
