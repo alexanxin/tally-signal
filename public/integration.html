@@ -748,12 +748,45 @@ result = request_with_payment(
     print(signal[<span class="st">"signal"</span>])   <span class="cm"># BULLISH / BEARISH</span>
     print(signal[<span class="st">"entry"</span>])    <span class="cm"># entry price</span></code></pre>
 
+    <!-- STANDING BUDGET / ALLOWANCES -->
+    <div class="section-header">Standing budget · pay direct</div>
+
+    <p style="font-size:0.9rem;color:var(--text-body);margin-bottom:16px;line-height:1.7;">The flow above funds a fresh session per task and sweeps the residual back. The second model skips the per-task tap entirely: with <strong style="color:var(--text);">one card tap the user pre-authorizes a capped, time-boxed budget</strong> on Solana's allowances program (a <code style="font-family:var(--mono);font-size:0.85em;color:var(--green);">FixedDelegation</code>). The agent then pays merchants <strong style="color:var(--text);">straight from the vault</strong> within that budget, no further taps. The cap and expiry are enforced on-chain and the cap decrements per payment, so the unspent remainder never leaves the cold vault — nothing to sweep back. Revoke one agent, or all of them, instantly.</p>
+
+    <p style="font-size:0.9rem;color:var(--text-body);margin-bottom:16px;line-height:1.7;">No budget yet? The agent proposes one. The user gets a Telegram deep link that opens the app's <strong style="color:var(--text);">Authorize Budget</strong> screen pre-filled, and approves with a single card tap.</p>
+    <pre style="margin-bottom:32px;"><code><button class="copy-btn" onclick="copyCode(this)">Copy</button><span class="kw">from</span> warm_vault_auth <span class="kw">import</span> request_budget, wait_for_budget
+
+<span class="cm"># Propose a budget. ttl_seconds accepts seconds or "7d" / "24h".</span>
+<span class="cm"># Sends the user a Telegram deep link → Authorize Budget screen → one card tap.</span>
+req = request_budget(amount_usdc=<span class="nm">15</span>, ttl_seconds=<span class="st">"7d"</span>, reason=<span class="st">"60 signal API calls"</span>)
+
+<span class="cm"># Optionally block until approved (or poll budget_status() later).</span>
+budget = wait_for_budget(timeout_seconds=<span class="nm">600</span>)   <span class="cm"># dict if approved, None on timeout</span></code></pre>
+
+    <p style="font-size:0.9rem;color:var(--text-body);margin-bottom:16px;line-height:1.7;">With a budget active, the agent pays directly — no tap, no sweep:</p>
+    <pre style="margin-bottom:56px;"><code><button class="copy-btn" onclick="copyCode(this)">Copy</button><span class="kw">from</span> warm_vault_auth <span class="kw">import</span> budget_status, pay_from_budget, request_with_payment
+
+<span class="cm"># Inspect the active budget (reads the on-chain FixedDelegation).</span>
+b = budget_status()
+<span class="cm"># → {"remaining_usdc": 14.0, "expiry_ts": 1769900000, "active": True}</span>
+
+<span class="cm"># Pay a payee straight from the vault, within the cap. No card tap.</span>
+<span class="cm"># Signed by the session key; the program checks cap + expiry and decrements on-chain.</span>
+sig = pay_from_budget(destination_pubkey=<span class="st">"&lt;PAYEE&gt;"</span>, amount_usdc=<span class="nm">1.0</span>)
+
+<span class="cm"># x402 in budget mode: pay the endpoint directly, no tap, no sweep.</span>
+result = request_with_payment(
+    url=<span class="st">"https://tally.lll.mk/api/signal"</span>,
+    amount_usdc=<span class="nm">1.0</span>,
+    source=<span class="st">"budget"</span>,
+)</code></pre>
+
     <!-- FILE LIST -->
     <div class="file-list">
       <h2>What's in the zip</h2>
       <div class="file-item">
         <div class="file-name">warm_vault_auth.py</div>
-        <div class="file-desc">Core skill: request_funding (with ttl), is_session_active, check_balance, return_funds, request_with_payment</div>
+        <div class="file-desc">Core skill: request_funding (with ttl), is_session_active, check_balance, return_funds, request_with_payment — plus standing budgets: request_budget, budget_status, pay_from_budget</div>
       </div>
       <div class="file-item">
         <div class="file-name">tg_bot.py</div>
