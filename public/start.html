@@ -1450,7 +1450,7 @@
           <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
         <div class="nav-dropdown-menu">
-          <span class="nav-dropdown-item-sub" style="color: var(--green); letter-spacing: 1px; text-transform: uppercase; font-family: var(--mono); border-bottom: 1px solid var(--border-dim); padding-bottom: 9px; margin-bottom: 4px;">Latest build · v1.8.0</span>
+          <span class="nav-dropdown-item-sub" style="color: var(--green); letter-spacing: 1px; text-transform: uppercase; font-family: var(--mono); border-bottom: 1px solid var(--border-dim); padding-bottom: 9px; margin-bottom: 4px;">Latest build · v1.9.0</span>
           <a class="nav-dropdown-item" href="/api/download/android">Android APK ↓</a>
           <span class="nav-dropdown-item-sub">Real card required. Any contactless Visa or Mastercard.</span>
           <a class="nav-dropdown-item" href="/api/download/android-mock">Android Mock ↓</a>
@@ -1483,7 +1483,7 @@
 
   <!-- UPDATE NOTICE -->
   <div class="update-notice">
-    <span class="update-notice-tag">⚠ v1.8.0 is live</span>
+    <span class="update-notice-tag">⚠ v1.9.0 is live</span>
     <span>
       Already on v1.7.0? This installs right over it — <strong>same vault, no restore needed</strong>.
       Coming from a version <strong>before v1.7.0</strong>? The app will ask you to
@@ -1757,8 +1757,23 @@
 
         <div class="devlog-entry devlog-entry-latest">
           <div class="devlog-head">
-            <span class="devlog-ver">v1.8.0</span>
+            <span class="devlog-ver">v1.9.0</span>
             <span class="devlog-latest-tag">Latest</span>
+            <span class="devlog-date">June 18, 2026</span>
+          </div>
+          <div class="devlog-title">Spend privately, end to end</div>
+          <ul class="devlog-changes">
+            <li>Spend privately. Money you received to a private address can now be sent on without revealing your main wallet — the private wallet pays its own network fee, so nothing on-chain links the payment back to you. Send USDC or SOL.</li>
+            <li>Reuse your private wallets. Receiving privately lets you reuse a wallet you've used before or open a fresh one, and when you have more than one, Send lets you pick which to spend from — both its USDC and SOL come from that one.</li>
+            <li>Private balances refresh the moment you send, and very small balances are no longer rounded away to zero.</li>
+            <li>Smoother loading: your balance, holdings, and Earn positions show a placeholder while they load instead of popping in.</li>
+            <li>Earn · USDC reliably shows your real supplied balance again.</li>
+          </ul>
+        </div>
+
+        <div class="devlog-entry">
+          <div class="devlog-head">
+            <span class="devlog-ver">v1.8.0</span>
             <span class="devlog-date">June 17, 2026</span>
           </div>
           <div class="devlog-title">Receive privately, and a steadier wallet</div>
@@ -2006,10 +2021,10 @@
           </div>
         </div>
         <div class="roadmap-item">
-          <span class="roadmap-tag roadmap-tag-planned">Planned</span>
+          <span class="roadmap-tag roadmap-tag-shipped">Shipped</span>
           <div class="roadmap-body">
             <div class="roadmap-title">Private spend, no link</div>
-            <div class="roadmap-desc">Today a privately received balance is spent with the vault paying its gas, which discloses the connection. Next: the stealth wallet funds its own gas by swapping a sliver of its own USDC, so private funds can be spent with no on-chain tie back to your main vault.</div>
+            <div class="roadmap-desc">Spend a privately received balance without revealing your main wallet. The stealth wallet pays its own network fee — funding it from its own USDC when needed — so the payment carries no on-chain tie back to your vault. Send USDC or SOL.</div>
           </div>
         </div>
       </div>
