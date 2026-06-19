@@ -37,7 +37,7 @@ const VARIANTS: Record<string, string> = {
 };
 
 const VARIANT_LABELS: Record<string, string> = {
-  android: "Android (real card)",
+  android: "Android (card or tag)",
   "android-mock": "Android (mock NFC)",
 };
 
