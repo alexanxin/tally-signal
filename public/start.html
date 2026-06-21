@@ -1450,7 +1450,7 @@
           <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
         <div class="nav-dropdown-menu">
-          <span class="nav-dropdown-item-sub" style="color: var(--green); letter-spacing: 1px; text-transform: uppercase; font-family: var(--mono); border-bottom: 1px solid var(--border-dim); padding-bottom: 9px; margin-bottom: 4px;">Latest build · v1.10.0</span>
+          <span class="nav-dropdown-item-sub" style="color: var(--green); letter-spacing: 1px; text-transform: uppercase; font-family: var(--mono); border-bottom: 1px solid var(--border-dim); padding-bottom: 9px; margin-bottom: 4px;">Latest build · v1.11.0</span>
           <a class="nav-dropdown-item" href="/api/download/android">Android APK ↓</a>
           <span class="nav-dropdown-item-sub">A contactless Visa/Mastercard, or a blank NTAG215 NFC tag.</span>
           <a class="nav-dropdown-item" href="/api/download/android-mock">Android Mock ↓</a>
@@ -1483,7 +1483,7 @@
 
   <!-- UPDATE NOTICE -->
   <div class="update-notice">
-    <span class="update-notice-tag">⚠ v1.10.0 is live</span>
+    <span class="update-notice-tag">⚠ v1.11.0 is live</span>
     <span>
       Already on v1.7.0? This installs right over it — <strong>same vault, no restore needed</strong>.
       Coming from a version <strong>before v1.7.0</strong>? The app will ask you to
@@ -1757,8 +1757,22 @@
 
         <div class="devlog-entry devlog-entry-latest">
           <div class="devlog-head">
-            <span class="devlog-ver">v1.10.0</span>
+            <span class="devlog-ver">v1.11.0</span>
             <span class="devlog-latest-tag">Latest</span>
+            <span class="devlog-date">June 22, 2026</span>
+          </div>
+          <div class="devlog-title">Hidden vaults</div>
+          <ul class="devlog-changes">
+            <li>Create hidden vaults that live nowhere. A hidden vault is built from your card or tag plus a passphrase you choose. Nothing about it is saved on the phone and it isn't listed anywhere, so someone who opens the app and unlocks it sees only your main vault.</li>
+            <li>Open one from the lock screen or from Settings: tap the same card or tag, enter the passphrase, confirm the address, and you're in. Every transaction still needs a tap.</li>
+            <li>Because nothing is stored, the same card or tag plus the same passphrase opens the same hidden vault on any phone running Tally. A 24-word phrase is shown once as a backup.</li>
+            <li>To keep one private, fund it from an outside wallet. The receive screen reminds you not to send to it straight from your main vault.</li>
+          </ul>
+        </div>
+
+        <div class="devlog-entry">
+          <div class="devlog-head">
+            <span class="devlog-ver">v1.10.0</span>
             <span class="devlog-date">June 19, 2026</span>
           </div>
           <div class="devlog-title">Tap a tag, not just a card</div>
@@ -1954,6 +1968,13 @@
     <section class="roadmap-section">
       <div class="section-label">Roadmap</div>
       <div class="roadmap-grid">
+        <div class="roadmap-item">
+          <span class="roadmap-tag roadmap-tag-shipped">Shipped</span>
+          <div class="roadmap-body">
+            <div class="roadmap-title">Hidden vaults</div>
+            <div class="roadmap-desc">A second vault that lives nowhere. It's derived from your card or tag plus a passphrase you choose, and nothing about it is stored or listed — so someone who opens your phone and unlocks it sees only your main vault. The same card or tag plus the same passphrase reopens it here or on any phone running Tally, with no biometric and no per-device backup. Every transaction still needs a tap.</div>
+          </div>
+        </div>
         <div class="roadmap-item">
           <span class="roadmap-tag roadmap-tag-shipped">Shipped</span>
           <div class="roadmap-body">
