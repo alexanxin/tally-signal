@@ -1957,6 +1957,13 @@
         <div class="roadmap-item">
           <span class="roadmap-tag roadmap-tag-shipped">Shipped</span>
           <div class="roadmap-body">
+            <div class="roadmap-title">NFC tag as a signing key</div>
+            <div class="roadmap-desc">No contactless card? A blank ~$0.50 NTAG215 works as your signing key instead. At setup it's written once with a random secret, encrypted to your phone, then permanently locked — so a stranger who taps it reads only noise. Same 2-of-2 model as the card: half on the tag, half sealed behind your fingerprint. Setup auto-detects whether you tap a card or a tag.</div>
+          </div>
+        </div>
+        <div class="roadmap-item">
+          <span class="roadmap-tag roadmap-tag-shipped">Shipped</span>
+          <div class="roadmap-body">
             <div class="roadmap-title">UID-only card derivation</div>
             <div class="roadmap-desc">PCI mode: the Card_Shard is derived from the card's hardware UID and a salt only. No card number ever read, no PAN in RAM. Selectable at vault creation for regulated and enterprise deployments where PAN exposure is a compliance blocker.</div>
           </div>
