@@ -1450,7 +1450,7 @@
           <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
         <div class="nav-dropdown-menu">
-          <span class="nav-dropdown-item-sub" style="color: var(--green); letter-spacing: 1px; text-transform: uppercase; font-family: var(--mono); border-bottom: 1px solid var(--border-dim); padding-bottom: 9px; margin-bottom: 4px;">Latest build · v1.14.0</span>
+          <span class="nav-dropdown-item-sub" style="color: var(--green); letter-spacing: 1px; text-transform: uppercase; font-family: var(--mono); border-bottom: 1px solid var(--border-dim); padding-bottom: 9px; margin-bottom: 4px;">Latest build · v1.16.0</span>
           <a class="nav-dropdown-item" href="/api/download/android">Android APK ↓</a>
           <span class="nav-dropdown-item-sub">A contactless Visa/Mastercard, or a blank NTAG215 NFC tag.</span>
           <a class="nav-dropdown-item" href="/api/download/android-mock">Android Mock ↓</a>
@@ -1483,7 +1483,7 @@
 
   <!-- UPDATE NOTICE -->
   <div class="update-notice">
-    <span class="update-notice-tag">⚠ v1.14.0 is live</span>
+    <span class="update-notice-tag">⚠ v1.16.0 is live</span>
     <span>
       Already on v1.7.0? This installs right over it — <strong>same vault, no restore needed</strong>.
       Coming from a version <strong>before v1.7.0</strong>? The app will ask you to
@@ -1757,8 +1757,33 @@
 
         <div class="devlog-entry devlog-entry-latest">
           <div class="devlog-head">
-            <span class="devlog-ver">v1.14.0</span>
+            <span class="devlog-ver">v1.16.0</span>
             <span class="devlog-latest-tag">Latest</span>
+            <span class="devlog-date">July 2, 2026</span>
+          </div>
+          <div class="devlog-title">Give your agents an on-chain identity</div>
+          <ul class="devlog-changes">
+            <li>Authorize an agent by name and Tally gives it a permanent on-chain identity plus a capped, revocable budget, in one card tap. The identity carries proof that you tapped your card to approve its spending, so anyone can verify a real person stands behind it.</li>
+            <li>Each agent gets its own stable key that is never your main wallet key, and its identity is soulbound, so it cannot be moved or sold.</li>
+            <li>Retire an agent any time by burning its identity, which reclaims most of its on-chain rent.</li>
+          </ul>
+        </div>
+
+        <div class="devlog-entry">
+          <div class="devlog-head">
+            <span class="devlog-ver">v1.15.0</span>
+            <span class="devlog-date">June 24, 2026</span>
+          </div>
+          <div class="devlog-title">Connect to any Solana app</div>
+          <ul class="devlog-changes">
+            <li>Open any Solana app right inside Tally and use it with your card. A built-in browser connects the app to your vault, every signature is a card tap, so there is no seed phrase to paste and nothing leaves your phone.</li>
+            <li>Proven on Jupiter: open jup.ag inside Tally, swap, and sign without ever leaving the app.</li>
+          </ul>
+        </div>
+
+        <div class="devlog-entry">
+          <div class="devlog-head">
+            <span class="devlog-ver">v1.14.0</span>
             <span class="devlog-date">June 22, 2026</span>
           </div>
           <div class="devlog-title">Agents, in one place</div>
