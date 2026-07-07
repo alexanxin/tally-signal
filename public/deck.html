@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tally — The Human-Intent Layer for Agentic Payments</title>
+  <meta name="description" content="Tally is the human-intent layer for agentic payments on Solana. One card tap proves a human approved the agent, caps what it can spend on-chain, and binds that approval to every payment it settles." />
+  <meta property="og:title" content="Tally — The Human-Intent Layer for Agentic Payments" />
+  <meta property="og:description" content="A card tap as an unforgeable human approval for AI agents. Bounded, on-chain, verifiable by anyone." />
+  <meta property="og:image" content="https://tally.lll.mk/og-image.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;0,800;0,900;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:           #0b0f14;
+      --bg-card:      #111820;
+      --bg-raised:    #161e28;
+      --bg-code:      #0d1520;
+      --border:       rgba(74, 222, 128, 0.18);
+      --border-dim:   rgba(74, 222, 128, 0.07);
+      --border-ui:    rgba(255, 255, 255, 0.07);
+      --green:        #4ade80;
+      --green-dim:    rgba(74, 222, 128, 0.09);
+      --green-glow:   rgba(74, 222, 128, 0.28);
+      --red:          #f87171;
+      --red-dim:      rgba(248, 113, 113, 0.07);
+      --teal:         #2dd4bf;
+      --amber:        #fbbf24;
+      --text:         #f0f4f8;
+      --text-body:    #b0bec5;
+      --text-meta:    #78909c;
+      --text-ghost:   #4a5568;
+      --display:      'DM Sans', system-ui, sans-serif;
+      --sans:         'Inter', system-ui, sans-serif;
+      --mono:         'JetBrains Mono', 'Fira Code', monospace;
+      --max-w:        920px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-snap-type: y proximity;
+      font-size: 16px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text-body);
+      font-family: var(--sans);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 90% 55% at 50% -5%, rgba(10, 38, 44, 0.95) 0%, transparent 55%),
+        radial-gradient(ellipse 45% 40% at 85% 70%, rgba(8, 28, 34, 0.5) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(74, 222, 128, 0.022) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(74, 222, 128, 0.022) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* TOP BAR */
+    .topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 40;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 28px;
+      background: linear-gradient(to bottom, rgba(11,15,20,0.85) 0%, rgba(11,15,20,0) 100%);
+      backdrop-filter: blur(2px);
+    }
+    .brand {
+      display: flex; align-items: center; gap: 8px;
+      font-family: var(--mono); font-weight: 700; font-size: 0.82rem;
+      letter-spacing: 5px; color: var(--green); text-decoration: none;
+    }
+    .brand img { width: 66px; height: 38px; object-fit: contain; }
+    .topbar-right { display: flex; align-items: center; gap: 20px; }
+    .topbar-link {
+      font-family: var(--mono); font-size: 0.68rem; letter-spacing: 1.5px;
+      text-transform: uppercase; color: var(--text-meta); text-decoration: none;
+      transition: color 0.15s;
+    }
+    .topbar-link:hover { color: var(--green); }
+
+    /* PROGRESS RAIL */
+    .rail {
+      position: fixed;
+      right: 26px; top: 50%; transform: translateY(-50%);
+      z-index: 40;
+      display: flex; flex-direction: column; gap: 14px;
+    }
+    .rail button {
+      width: 9px; height: 9px; padding: 0;
+      border-radius: 50%; border: 1px solid var(--text-ghost);
+      background: transparent; cursor: pointer;
+      transition: all 0.25s ease;
+    }
+    .rail button:hover { border-color: var(--green); }
+    .rail button.active {
+      background: var(--green); border-color: var(--green);
+      box-shadow: 0 0 0 4px var(--green-dim);
+    }
+
+    /* SLIDES */
+    .slide {
+      position: relative; z-index: 1;
+      min-height: 100vh;
+      scroll-snap-align: start;
+      display: flex; align-items: center;
+      padding: 104px 32px 88px;
+    }
+    .slide-inner { width: 100%; max-width: var(--max-w); margin: 0 auto; }
+
+    /* reveal on enter */
+    .slide-inner > .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .slide.in .slide-inner > .reveal { opacity: 1; transform: none; }
+    .slide.in .slide-inner > .reveal:nth-child(1) { transition-delay: 0.04s; }
+    .slide.in .slide-inner > .reveal:nth-child(2) { transition-delay: 0.12s; }
+    .slide.in .slide-inner > .reveal:nth-child(3) { transition-delay: 0.20s; }
+    .slide.in .slide-inner > .reveal:nth-child(4) { transition-delay: 0.28s; }
+    .slide.in .slide-inner > .reveal:nth-child(5) { transition-delay: 0.36s; }
+    .slide.in .slide-inner > .reveal:nth-child(6) { transition-delay: 0.44s; }
+
+    /* SHARED TYPE */
+    .tag {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--mono); font-size: 0.7rem; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--green);
+      border: 1px solid var(--border); background: var(--green-dim);
+      padding: 6px 14px; margin-bottom: 28px;
+    }
+    .label {
+      font-family: var(--mono); font-size: 0.65rem; letter-spacing: 3px;
+      text-transform: uppercase; color: var(--text-ghost); margin-bottom: 22px;
+    }
+    h1 {
+      font-family: var(--display); font-weight: 800;
+      font-size: clamp(2.3rem, 6.5vw, 4.4rem);
+      line-height: 1.05; letter-spacing: -0.035em; color: var(--text);
+      margin-bottom: 24px;
+    }
+    h2 {
+      font-family: var(--display); font-weight: 800;
+      font-size: clamp(1.7rem, 4vw, 2.9rem);
+      line-height: 1.12; letter-spacing: -0.03em; color: var(--text);
+      margin-bottom: 24px; max-width: 20ch;
+    }
+    em { font-style: normal; color: var(--green); }
+    .lead {
+      font-size: clamp(1.02rem, 1.6vw, 1.28rem); line-height: 1.65;
+      color: var(--text-body); max-width: 62ch;
+    }
+    .body { font-size: 1.05rem; line-height: 1.7; color: var(--text-body); max-width: 60ch; }
+    .kicker {
+      font-family: var(--mono); font-size: 0.82rem; letter-spacing: 0.5px;
+      color: var(--green); margin-top: 28px;
+    }
+    .count {
+      position: absolute; bottom: 34px; left: 32px;
+      font-family: var(--mono); font-size: 0.7rem; letter-spacing: 2px;
+      color: var(--text-ghost);
+    }
+
+    /* SLIDE 1 extras */
+    .hero-meta {
+      display: flex; align-items: center; gap: 14px; margin-top: 40px;
+      font-family: var(--mono); font-size: 0.72rem; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--text-meta);
+    }
+    .hero-meta .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--text-ghost); }
+    .scroll-hint {
+      position: absolute; bottom: 34px; left: 50%; transform: translateX(-50%);
+      font-family: var(--mono); font-size: 0.66rem; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--text-ghost);
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+    }
+    .scroll-hint span { animation: bob 1.8s ease-in-out infinite; font-size: 0.9rem; }
+    @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
+
+    /* TWO-COLUMN COMPARE */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 8px; }
+    .col {
+      border: 1px solid var(--border-ui); border-radius: 4px;
+      padding: 26px; background: var(--bg-card);
+    }
+    .col.open { border-color: var(--border); background: var(--green-dim); }
+    .col-head {
+      font-family: var(--mono); font-size: 0.68rem; letter-spacing: 2px;
+      text-transform: uppercase; margin-bottom: 6px;
+    }
+    .col.solved .col-head { color: var(--text-meta); }
+    .col.open .col-head { color: var(--green); }
+    .col-status {
+      font-family: var(--display); font-weight: 800; font-size: 1.4rem;
+      color: var(--text); margin-bottom: 14px; letter-spacing: -0.02em;
+    }
+    .col p { font-size: 0.95rem; line-height: 1.6; color: var(--text-body); }
+    .col code { font-family: var(--mono); font-size: 0.82rem; color: var(--green); }
+
+    /* CONTRAST ROWS */
+    .contrast { display: flex; flex-direction: column; gap: 0; margin-top: 8px; }
+    .crow {
+      display: grid; grid-template-columns: 130px 1fr; gap: 0 22px;
+      padding: 20px 0; border-bottom: 1px solid var(--border-dim); align-items: baseline;
+    }
+    .crow:first-child { border-top: 1px solid var(--border-dim); }
+    .crow-who {
+      font-family: var(--display); font-weight: 800; font-size: 1.1rem;
+      letter-spacing: -0.01em;
+    }
+    .crow.them .crow-who { color: var(--text-meta); }
+    .crow.us .crow-who { color: var(--green); }
+    .crow-what { font-size: 0.98rem; line-height: 1.55; color: var(--text-body); }
+
+    /* MECHANISM POINTS */
+    .points { display: flex; flex-direction: column; gap: 0; margin-top: 4px; }
+    .point {
+      display: grid; grid-template-columns: 40px 1fr; gap: 0 18px;
+      padding: 18px 0; border-bottom: 1px solid var(--border-dim);
+    }
+    .point:first-child { border-top: 1px solid var(--border-dim); }
+    .point-num { font-family: var(--mono); font-size: 0.65rem; color: var(--green); padding-top: 3px; }
+    .point p { font-size: 0.98rem; line-height: 1.55; color: var(--text-body); }
+    .point b { color: var(--text); font-weight: 600; }
+
+    .formula {
+      margin-top: 30px; background: var(--bg-code); border: 1px solid var(--border);
+      border-radius: 4px; padding: 22px 24px;
+    }
+    .formula code {
+      font-family: var(--mono); font-size: clamp(0.85rem, 2.2vw, 1.15rem);
+      color: var(--green); letter-spacing: 0.5px;
+    }
+    .formula .cap { font-family: var(--mono); font-size: 0.72rem; color: var(--text-meta); margin-top: 10px; letter-spacing: 0.5px; }
+
+    /* THREE LEGS */
+    .legs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 8px; }
+    .leg {
+      border: 1px solid var(--border-ui); border-radius: 4px;
+      padding: 24px 22px; background: var(--bg-card);
+      border-top: 2px solid var(--green);
+    }
+    .leg-num { font-family: var(--mono); font-size: 0.62rem; color: var(--text-ghost); letter-spacing: 2px; }
+    .leg-name {
+      font-family: var(--mono); font-size: 0.72rem; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--green); margin: 8px 0 12px;
+    }
+    .leg p { font-size: 0.92rem; line-height: 1.55; color: var(--text-body); }
+    .chain {
+      margin-top: 26px; background: var(--bg-code); border: 1px solid var(--border-dim);
+      border-radius: 4px; padding: 18px 22px;
+      font-family: var(--mono); font-size: clamp(0.72rem, 2vw, 0.95rem);
+      color: var(--text); letter-spacing: 0.5px; text-align: center; overflow-x: auto;
+    }
+    .chain .arr { color: var(--green); padding: 0 6px; }
+    .chain-cap { font-size: 0.92rem; line-height: 1.6; color: var(--text-meta); margin-top: 18px; max-width: 64ch; }
+
+    /* TRACTION GRID */
+    .tgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 8px; }
+    .tcard {
+      border: 1px solid var(--border-ui); border-radius: 4px;
+      padding: 22px; background: var(--bg-card);
+    }
+    .tcard-top {
+      font-family: var(--mono); font-size: 0.64rem; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--green); margin-bottom: 10px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .tcard-top .live { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 3px var(--green-dim); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .tcard p { font-size: 0.94rem; line-height: 1.55; color: var(--text-body); }
+    .tcard code { font-family: var(--mono); font-size: 0.8rem; color: var(--green); word-break: break-all; }
+
+    .curl {
+      margin-top: 20px; background: var(--bg-code); border: 1px solid var(--border);
+      border-radius: 4px; padding: 18px 20px;
+      display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    }
+    .curl code { font-family: var(--mono); font-size: 0.8rem; color: var(--green); flex: 1; min-width: 240px; word-break: break-all; }
+    .curl .out { font-family: var(--mono); font-size: 0.72rem; color: var(--text-meta); }
+    .copy-btn {
+      font-family: var(--mono); font-size: 0.6rem; letter-spacing: 1px; text-transform: uppercase;
+      color: var(--text-ghost); background: none; border: 1px solid var(--border-dim);
+      padding: 5px 11px; cursor: pointer; transition: color 0.15s, border-color 0.15s; flex-shrink: 0;
+    }
+    .copy-btn:hover, .copy-btn.copied { color: var(--green); border-color: var(--border); }
+
+    /* ROADMAP */
+    .road { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 8px; }
+    .rstep { border: 1px solid var(--border-ui); border-radius: 4px; padding: 22px; background: var(--bg-card); }
+    .rstep-num {
+      font-family: var(--display); font-weight: 900; font-size: 2rem;
+      color: var(--green-dim); line-height: 1; margin-bottom: 12px;
+      -webkit-text-stroke: 1px var(--green); color: transparent;
+    }
+    .rstep h3 { font-family: var(--display); font-weight: 700; font-size: 1.1rem; color: var(--text); margin-bottom: 8px; }
+    .rstep p { font-size: 0.9rem; line-height: 1.5; color: var(--text-body); }
+
+    .close-line {
+      font-family: var(--display); font-weight: 800;
+      font-size: clamp(1.3rem, 3vw, 2.1rem); line-height: 1.2;
+      letter-spacing: -0.02em; color: var(--text); margin-top: 36px; max-width: 24ch;
+    }
+    .close-line em { color: var(--green); }
+    .links {
+      display: flex; flex-wrap: wrap; gap: 22px; margin-top: 30px;
+      font-family: var(--mono); font-size: 0.72rem; letter-spacing: 1.5px; text-transform: uppercase;
+    }
+    .links a { color: var(--text-meta); text-decoration: none; transition: color 0.15s; }
+    .links a:hover { color: var(--green); }
+
+    /* RESPONSIVE */
+    @media (max-width: 780px) {
+      .rail { display: none; }
+      .topbar-link.hide-sm { display: none; }
+      .two-col, .legs, .tgrid, .road, .tgrid { grid-template-columns: 1fr; }
+      .legs, .road { grid-template-columns: 1fr; }
+      h2 { max-width: none; }
+      .slide { padding: 92px 22px 76px; }
+      .crow { grid-template-columns: 90px 1fr; gap: 0 14px; }
+      .count { left: 22px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+      .slide-inner > .reveal { opacity: 1 !important; transform: none !important; }
+      html { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <a class="brand" href="/start.html"><img src="/card-logo.png" alt="Tally" />TALLY</a>
+    <div class="topbar-right">
+      <a class="topbar-link hide-sm" href="https://tally.lll.mk/api/signal" target="_blank">Live x402 ↗</a>
+      <a class="topbar-link" href="/start.html">Site ↗</a>
+    </div>
+  </div>
+
+  <div class="rail" id="rail"></div>
+
+  <!-- 1 · TITLE -->
+  <section class="slide" id="s1">
+    <div class="slide-inner">
+      <div class="tag reveal">Agentic payments · Solana</div>
+      <h1 class="reveal">The <em>human-intent</em> layer for agentic payments.</h1>
+      <p class="lead reveal">One card tap proves a human approved the agent, caps what it can spend on-chain, and binds that approval to every payment it settles.</p>
+      <div class="hero-meta reveal"><span>Tally</span><span class="dot"></span><span>tally.lll.mk</span></div>
+    </div>
+    <div class="count">01 / 09</div>
+    <div class="scroll-hint">Scroll or use arrow keys<span>↓</span></div>
+  </section>
+
+  <!-- 2 · THE GAP -->
+  <section class="slide" id="s2">
+    <div class="slide-inner">
+      <div class="label reveal">The gap</div>
+      <h2 class="reveal">Agents can spend. Almost nothing proves a human approved it.</h2>
+      <div class="two-col reveal">
+        <div class="col solved">
+          <div class="col-head">Settlement</div>
+          <div class="col-status">Solved</div>
+          <p>The x402 rails answer one question well: did the payment go through. <code>exact</code>, <code>upto</code>, <code>batch-settlement</code>.</p>
+        </div>
+        <div class="col open">
+          <div class="col-head">Human intent</div>
+          <div class="col-status">Open</div>
+          <p>Did a real human authorize this agent? Is the authority bounded? Can anyone verify it without trusting the agent or the facilitator?</p>
+        </div>
+      </div>
+      <div class="kicker reveal">That open slot is the opportunity.</div>
+    </div>
+    <div class="count">02 / 09</div>
+  </section>
+
+  <!-- 3 · WHY NOW -->
+  <section class="slide" id="s3">
+    <div class="slide-inner">
+      <div class="label reveal">Why now</div>
+      <h2 class="reveal">The largest payment network just named the category.</h2>
+      <p class="body reveal">In June 2026, Mastercard's Agent Pay for Machines began issuing agents human-granted, capped spending permissions, recorded on-chain, including on Solana.</p>
+      <div class="contrast reveal">
+        <div class="crow them">
+          <div class="crow-who">Mastercard</div>
+          <div class="crow-what">Software clicks inside a permissioned network.</div>
+        </div>
+        <div class="crow us">
+          <div class="crow-who">Tally</div>
+          <div class="crow-what">A hardware-rooted human signature, verifiable by anyone on-chain, with no operator in the loop.</div>
+        </div>
+      </div>
+      <div class="kicker reveal">Same architecture. Better trust model. Shipping now.</div>
+    </div>
+    <div class="count">03 / 09</div>
+  </section>
+
+  <!-- 4 · THE MECHANISM -->
+  <section class="slide" id="s4">
+    <div class="slide-inner">
+      <div class="label reveal">The mechanism</div>
+      <h2 class="reveal">A physical card tap as an unforgeable human approval.</h2>
+      <div class="points reveal">
+        <div class="point"><div class="point-num">01</div><p><b>Any contactless bank card becomes the hardware key.</b> No extra device to buy or carry.</p></div>
+        <div class="point"><div class="point-num">02</div><p>The seed is split 2-of-2 between the phone's secure enclave and a shard derived from the card itself.</p></div>
+        <div class="point"><div class="point-num">03</div><p>The full key exists in memory for under half a second, then it is wiped.</p></div>
+        <div class="point"><div class="point-num">04</div><p><b>Nothing sensitive is stored.</b> The phone or the card alone reconstructs nothing.</p></div>
+      </div>
+      <div class="formula reveal">
+        <code>Master_Seed = Bio_Shard &#8853; Card_Shard</code>
+        <div class="cap">Neither half is ever written to disk. Both are required, every time.</div>
+      </div>
+    </div>
+    <div class="count">04 / 09</div>
+  </section>
+
+  <!-- 5 · THE CHAIN -->
+  <section class="slide" id="s5">
+    <div class="slide-inner">
+      <div class="label reveal">How it binds</div>
+      <h2 class="reveal">Intent, authority, settlement. One verifiable chain.</h2>
+      <div class="legs reveal">
+        <div class="leg">
+          <div class="leg-num">01</div>
+          <div class="leg-name">Intent</div>
+          <p>A signed proof of presence: a human authorized this agent to spend up to X until T.</p>
+        </div>
+        <div class="leg">
+          <div class="leg-num">02</div>
+          <div class="leg-name">Authority</div>
+          <p>An on-chain allowance enforces the cap and expiry. The agent only ever draws within it. The principal stays in the vault.</p>
+        </div>
+        <div class="leg">
+          <div class="leg-num">03</div>
+          <div class="leg-name">Settlement</div>
+          <p>The facilitator verifies the draw and settles it over standard x402 rails.</p>
+        </div>
+      </div>
+      <div class="chain reveal">human approval <span class="arr">&#8594;</span> bounded authority <span class="arr">&#8594;</span> settled draw</div>
+      <p class="chain-cap reveal">A counterparty verifies the whole chain offline. No trust in Tally, and no trust in the agent's self-report.</p>
+    </div>
+    <div class="count">05 / 09</div>
+  </section>
+
+  <!-- 6 · AGENT IDENTITY -->
+  <section class="slide" id="s-identity">
+    <div class="slide-inner">
+      <div class="label reveal">Agent identity</div>
+      <h2 class="reveal">Human approval, attached to a standards-based agent identity.</h2>
+      <div class="points reveal">
+        <div class="point"><div class="point-num">01</div><p>Every spending grant is a signed attestation: <b>this human approved this agent</b>, up to X, until T. Devnet-proven, with a live public verifier.</p></div>
+        <div class="point"><div class="point-num">02</div><p>The agent carries a verifiable on-chain identity, built on <b>Metaplex's agent-registry standard</b>, with soulbound credentials via mpl-core.</p></div>
+        <div class="point"><div class="point-num">03</div><p>Tally's human-intent proof plugs into the emerging agent-identity stack instead of being a proprietary token.</p></div>
+      </div>
+      <div class="kicker reveal">Standards-aligned, not proprietary.</div>
+    </div>
+    <div class="count">06 / 09</div>
+  </section>
+
+  <!-- 7 · WHAT WE OWN -->
+  <section class="slide" id="s6">
+    <div class="slide-inner">
+      <div class="label reveal">Positioning</div>
+      <h2 class="reveal">We don't own settlement. We own the proof a human approved it.</h2>
+      <p class="body reveal">The payment rails are becoming open standards on Solana, and the Solana Foundation is shipping them. We ride those rails instead of competing with them. The layer that proves a human authorized the agent is the empty slot, and it is ours.</p>
+      <div class="kicker reveal">Not a wallet feature. A category.</div>
+    </div>
+    <div class="count">07 / 09</div>
+  </section>
+
+  <!-- 8 · TRACTION -->
+  <section class="slide" id="s7">
+    <div class="slide-inner">
+      <div class="label reveal">Traction</div>
+      <h2 class="reveal">Working code, not a whitepaper.</h2>
+      <div class="tgrid reveal">
+        <div class="tcard">
+          <div class="tcard-top"><span class="live"></span>Live on mainnet</div>
+          <p>A real x402 endpoint on Solana. A 402, real USDC, anyone can curl it.</p>
+        </div>
+        <div class="tcard">
+          <div class="tcard-top">Shipped app</div>
+          <p>Card-tap signing for sends, and for any Solana dApp through an in-app browser.</p>
+        </div>
+        <div class="tcard">
+          <div class="tcard-top">Human approval, proven</div>
+          <p>The attestation runs on devnet, with a public verifier at <code>tally.lll.mk/api/attest/verify</code>.</p>
+        </div>
+        <div class="tcard">
+          <div class="tcard-top">Upstream</div>
+          <p>Contributing to the x402 payment spec and Solana's on-chain allowance programs.</p>
+        </div>
+      </div>
+      <div class="curl reveal">
+        <code>curl -i https://tally.lll.mk/api/signal</code>
+        <span class="out">→ HTTP/2 402 · x-payment-amount: 0.1 · USDC</span>
+        <button class="copy-btn" onclick="copyCmd(this, 'curl -i https://tally.lll.mk/api/signal')">Copy</button>
+      </div>
+    </div>
+    <div class="count">08 / 09</div>
+  </section>
+
+  <!-- 9 · THE ASK / CLOSE -->
+  <section class="slide" id="s8">
+    <div class="slide-inner">
+      <div class="label reveal">What's next</div>
+      <h2 class="reveal">What we'd build with support.</h2>
+      <div class="road reveal">
+        <div class="rstep">
+          <div class="rstep-num">01</div>
+          <h3>Security audit</h3>
+          <p>Independent review of the split, the allowance path, and the facilitator.</p>
+        </div>
+        <div class="rstep">
+          <div class="rstep-num">02</div>
+          <h3>Mainnet</h3>
+          <p>The full agent-payment flow live, beyond the signal endpoint.</p>
+        </div>
+        <div class="rstep">
+          <div class="rstep-num">03</div>
+          <h3>SDK</h3>
+          <p>Any agent builder drops in the human-approval layer in a few lines.</p>
+        </div>
+      </div>
+      <div class="close-line reveal">Tally is the <em>human-intent</em> layer for agentic payments on Solana.</div>
+      <div class="links reveal">
+        <a href="https://tally.lll.mk" target="_blank">tally.lll.mk</a>
+        <a href="https://youtu.be/7ksWSDN4As4" target="_blank">Demo ↗</a>
+        <a href="https://tally.lll.mk/api/signal" target="_blank">x402 endpoint ↗</a>
+        <a href="https://x.com/tallyvault" target="_blank">@tallyvault ↗</a>
+      </div>
+    </div>
+    <div class="count">09 / 09</div>
+  </section>
+
+  <script>
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    const rail = document.getElementById('rail');
+
+    // build progress dots
+    slides.forEach((s, i) => {
+      const b = document.createElement('button');
+      b.setAttribute('aria-label', 'Go to slide ' + (i + 1));
+      b.addEventListener('click', () => s.scrollIntoView({ behavior: 'smooth' }));
+      rail.appendChild(b);
+    });
+    const dots = Array.from(rail.children);
+
+    let current = 0;
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          e.target.classList.add('in');
+          const i = slides.indexOf(e.target);
+          if (e.intersectionRatio >= 0.5) {
+            current = i;
+            dots.forEach((d, di) => d.classList.toggle('active', di === i));
+          }
+        }
+      });
+    }, { threshold: [0.2, 0.5, 0.75] });
+    slides.forEach((s) => io.observe(s));
+    dots[0].classList.add('active');
+
+    // keyboard navigation
+    document.addEventListener('keydown', (ev) => {
+      const next = ['ArrowDown', 'ArrowRight', 'PageDown'];
+      const prev = ['ArrowUp', 'ArrowLeft', 'PageUp'];
+      if (next.includes(ev.key)) { ev.preventDefault(); if (current < slides.length - 1) slides[current + 1].scrollIntoView({ behavior: 'smooth' }); }
+      else if (prev.includes(ev.key)) { ev.preventDefault(); if (current > 0) slides[current - 1].scrollIntoView({ behavior: 'smooth' }); }
+      else if (ev.key === 'Home') { ev.preventDefault(); slides[0].scrollIntoView({ behavior: 'smooth' }); }
+      else if (ev.key === 'End') { ev.preventDefault(); slides[slides.length - 1].scrollIntoView({ behavior: 'smooth' }); }
+    });
+
+    function copyCmd(btn, text) {
+      navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = 'Copied';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+      });
+    }
+  </script>
+
+</body>
+</html>
