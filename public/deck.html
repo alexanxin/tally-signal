@@ -366,7 +366,7 @@
       <p class="lead reveal">One card tap proves a human approved the agent, caps what it can spend on-chain, and binds that approval to every payment it settles.</p>
       <div class="hero-meta reveal"><span>Tally</span><span class="dot"></span><span>tally.lll.mk</span></div>
     </div>
-    <div class="count">01 / 09</div>
+    <div class="count"></div>
     <div class="scroll-hint">Scroll or use arrow keys<span>↓</span></div>
   </section>
 
@@ -389,7 +389,7 @@
       </div>
       <div class="kicker reveal">That open slot is the opportunity.</div>
     </div>
-    <div class="count">02 / 09</div>
+    <div class="count"></div>
   </section>
 
   <!-- 3 · WHY NOW -->
@@ -410,7 +410,7 @@
       </div>
       <div class="kicker reveal">Same architecture. Better trust model. Shipping now.</div>
     </div>
-    <div class="count">03 / 09</div>
+    <div class="count"></div>
   </section>
 
   <!-- 4 · THE MECHANISM -->
@@ -419,8 +419,8 @@
       <div class="label reveal">The mechanism</div>
       <h2 class="reveal">A physical card tap as an unforgeable human approval.</h2>
       <div class="points reveal">
-        <div class="point"><div class="point-num">01</div><p><b>Any contactless bank card becomes the hardware key.</b> No extra device to buy or carry.</p></div>
-        <div class="point"><div class="point-num">02</div><p>The seed is split 2-of-2 between the phone's secure enclave and a shard derived from the card itself.</p></div>
+        <div class="point"><div class="point-num">01</div><p><b>The key is any contactless card you already carry, or an NFC tag.</b> Even an expired card works, so the cautious can use a dead one and never expose a live card.</p></div>
+        <div class="point"><div class="point-num">02</div><p>The seed is split 2-of-2 between the phone's secure enclave and a shard derived from the factor you tap.</p></div>
         <div class="point"><div class="point-num">03</div><p>The full key exists in memory for under half a second, then it is wiped.</p></div>
         <div class="point"><div class="point-num">04</div><p><b>Nothing sensitive is stored.</b> The phone or the card alone reconstructs nothing.</p></div>
       </div>
@@ -429,7 +429,23 @@
         <div class="cap">Neither half is ever written to disk. Both are required, every time.</div>
       </div>
     </div>
-    <div class="count">04 / 09</div>
+    <div class="count"></div>
+  </section>
+
+  <!-- FULL HARDWARE WALLET -->
+  <section class="slide" id="s-wallet">
+    <div class="slide-inner">
+      <div class="label reveal">The product</div>
+      <h2 class="reveal">It's also a full hardware wallet, with extras rivals don't ship.</h2>
+      <div class="points reveal">
+        <div class="point"><div class="point-num">01</div><p><b>Everything you expect:</b> self-custody send and receive, hardware-gated signing, the seed never exposed.</p></div>
+        <div class="point"><div class="point-num">02</div><p><b>Earn is built in:</b> stake SOL, earn on USDC, and swap, without leaving the wallet.</p></div>
+        <div class="point"><div class="point-num">03</div><p><b>Hidden vaults:</b> passphrase-gated wallets that store nothing. Deniable and portable.</p></div>
+        <div class="point"><div class="point-num">04</div><p><b>A built-in dApp browser</b> signs for any Solana dApp with a card tap.</p></div>
+      </div>
+      <div class="kicker reveal">The agent rails sit on a wallet people already use.</div>
+    </div>
+    <div class="count"></div>
   </section>
 
   <!-- 5 · THE CHAIN -->
@@ -457,7 +473,7 @@
       <div class="chain reveal">human approval <span class="arr">&#8594;</span> bounded authority <span class="arr">&#8594;</span> settled draw</div>
       <p class="chain-cap reveal">A counterparty verifies the whole chain offline. No trust in Tally, and no trust in the agent's self-report.</p>
     </div>
-    <div class="count">05 / 09</div>
+    <div class="count"></div>
   </section>
 
   <!-- 6 · AGENT IDENTITY -->
@@ -472,7 +488,7 @@
       </div>
       <div class="kicker reveal">Standards-aligned, not proprietary.</div>
     </div>
-    <div class="count">06 / 09</div>
+    <div class="count"></div>
   </section>
 
   <!-- 7 · WHAT WE OWN -->
@@ -483,7 +499,7 @@
       <p class="body reveal">The payment rails are becoming open standards on Solana, and the Solana Foundation is shipping them. We ride those rails instead of competing with them. The layer that proves a human authorized the agent is the empty slot, and it is ours.</p>
       <div class="kicker reveal">Not a wallet feature. A category.</div>
     </div>
-    <div class="count">07 / 09</div>
+    <div class="count"></div>
   </section>
 
   <!-- 8 · TRACTION -->
@@ -515,7 +531,7 @@
         <button class="copy-btn" onclick="copyCmd(this, 'curl -i https://tally.lll.mk/api/signal')">Copy</button>
       </div>
     </div>
-    <div class="count">08 / 09</div>
+    <div class="count"></div>
   </section>
 
   <!-- 9 · THE ASK / CLOSE -->
@@ -548,7 +564,7 @@
         <a href="https://x.com/tallyvault" target="_blank">@tallyvault ↗</a>
       </div>
     </div>
-    <div class="count">09 / 09</div>
+    <div class="count"></div>
   </section>
 
   <script>
@@ -561,6 +577,11 @@
       b.setAttribute('aria-label', 'Go to slide ' + (i + 1));
       b.addEventListener('click', () => s.scrollIntoView({ behavior: 'smooth' }));
       rail.appendChild(b);
+    });
+    const total = String(slides.length).padStart(2, '0');
+    slides.forEach((s, i) => {
+      const c = s.querySelector('.count');
+      if (c) c.textContent = String(i + 1).padStart(2, '0') + ' / ' + total;
     });
     const dots = Array.from(rail.children);
 
