@@ -357,6 +357,7 @@ export async function verifyExactPayment(
 
   // Instruction allowlist
   let transfer: ParsedInstruction | null = null;
+  let createdPayToAta: string | null = null; // payTo's ATA created in-tx (createAtaIdempotent)
   for (const ix of tx.instructions) {
     if (ix.programId === COMPUTE_BUDGET_PROGRAM) {
       const disc = ix.data[0];
@@ -377,6 +378,9 @@ export async function verifyExactPayment(
         return { isValid: false, invalidReason: "disallowed_ata_ix" };
       if (ix.accounts.length < 4 || ix.accounts[2] !== payTo)
         return { isValid: false, invalidReason: "ata_create_not_for_payTo" };
+      // Remember payTo's canonical ATA when it is created in this tx for the
+      // asset. The ATA program enforces canonicity on execution.
+      if (ix.accounts[3] === asset) createdPayToAta = ix.accounts[1];
       continue;
     }
     if (ix.programId === TOKEN_PROGRAM) {
@@ -409,11 +413,16 @@ export async function verifyExactPayment(
   if (!ownerPub || !ed25519Verify(ownerPub, tx.messageBytes, ownerSig))
     return { isValid: false, invalidReason: "payer_signature_invalid" };
 
-  // Destination must be payTo's ATA for the asset — confirmed on-chain, not trusted.
-  const ataInfo = await getAtaInfo(destAta, rpcUrl);
-  if (!ataInfo) return { isValid: false, invalidReason: "destination_ata_not_found" };
-  if (ataInfo.mint !== asset) return { isValid: false, invalidReason: "destination_wrong_mint" };
-  if (ataInfo.owner !== payTo) return { isValid: false, invalidReason: "destination_not_payTo" };
+  // Destination must be payTo's canonical ATA for the asset. Either it already
+  // exists on-chain (confirm owner + mint), or this tx creates it via a
+  // createAtaIdempotent for payTo (the ATA program enforces canonicity on
+  // execution, so a wrong-owner or non-canonical ata simply makes the tx fail).
+  if (createdPayToAta !== destAta) {
+    const ataInfo = await getAtaInfo(destAta, rpcUrl);
+    if (!ataInfo) return { isValid: false, invalidReason: "destination_ata_not_found" };
+    if (ataInfo.mint !== asset) return { isValid: false, invalidReason: "destination_wrong_mint" };
+    if (ataInfo.owner !== payTo) return { isValid: false, invalidReason: "destination_not_payTo" };
+  }
 
   return { isValid: true, payer: owner, amountAtomic: drawn, tx };
 }
