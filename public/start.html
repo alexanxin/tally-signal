@@ -1450,7 +1450,7 @@
           <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
         <div class="nav-dropdown-menu">
-          <span class="nav-dropdown-item-sub" style="color: var(--green); letter-spacing: 1px; text-transform: uppercase; font-family: var(--mono); border-bottom: 1px solid var(--border-dim); padding-bottom: 9px; margin-bottom: 4px;">Latest build · v1.16.0</span>
+          <span class="nav-dropdown-item-sub" style="color: var(--green); letter-spacing: 1px; text-transform: uppercase; font-family: var(--mono); border-bottom: 1px solid var(--border-dim); padding-bottom: 9px; margin-bottom: 4px;">Latest build · v1.17.0</span>
           <a class="nav-dropdown-item" href="/api/download/android">Android APK ↓</a>
           <span class="nav-dropdown-item-sub">A contactless Visa/Mastercard, or a blank NTAG215 NFC tag.</span>
           <a class="nav-dropdown-item" href="/api/download/android-mock">Android Mock ↓</a>
@@ -1483,15 +1483,15 @@
 
   <!-- UPDATE NOTICE -->
   <div class="update-notice">
-    <span class="update-notice-tag">⚠ v1.16.0 is live</span>
+    <span class="update-notice-tag">⚠ v1.17.0 is live</span>
     <span>
-      Already on v1.7.0? This installs right over it — <strong>same vault, no restore needed</strong>.
-      Coming from a version <strong>before v1.7.0</strong>? The app will ask you to
-      <strong>restore your vault from your 24-word recovery phrase</strong> once —
-      same address, same funds. <strong>Scan for wallets</strong> brings back
-      personal and burner wallets <strong>created on v1.7.0 or later</strong>.
-      Wallets made on older versions use independent keys the phrase cannot rebuild —
-      <strong>sweep their funds back to your main vault before updating</strong>.
+      <strong>Back up your 24-word recovery phrase first.</strong> On v1.7.0 or later? This installs right over it,
+      <strong>same vault, no restore needed. Do not uninstall</strong>: that deletes half of your key.
+      After the update Tally asks for your own <strong>free Helius key</strong> once (make one at dashboard.helius.dev).
+      <strong>Stay on the same variant</strong>: a vault made in the Mock app only opens in the Mock app.
+      Private receive balances come back after <strong>Sweep all private</strong>.
+      Coming from a version <strong>before v1.7.0</strong>? Restore from your phrase once, and sweep older
+      personal and burner wallets to your main vault before updating.
       <a href="#devlog">Details in the dev log</a>.
     </span>
   </div>
@@ -1757,8 +1757,26 @@
 
         <div class="devlog-entry devlog-entry-latest">
           <div class="devlog-head">
-            <span class="devlog-ver">v1.16.0</span>
+            <span class="devlog-ver">v1.17.0</span>
             <span class="devlog-latest-tag">Latest</span>
+            <span class="devlog-date">November 25, 2026</span>
+          </div>
+          <div class="devlog-title">Private balance on devnet, and a safer vault</div>
+          <ul class="devlog-changes">
+            <li>Private balance (devnet preview): keep USDC and SOL in a private balance, move funds in and out, and send privately. One fingerprint on open also unlocks its keys. Mainnet comes in a later release.</li>
+            <li>Tally now uses your own free Helius key for the network. Paste it once after the update; the shared default was too rate limited to rely on.</li>
+            <li>A card tap that would rebuild a different wallet is now refused, before anything is signed or changed.</li>
+            <li>Private receive wallets are now kept per vault, and "Sweep all private" moves every one of them back to your vault in one tap.</li>
+            <li>Creating a vault is clearer: card first, one fingerprint at the end, and a 2-word check that you saved your recovery phrase.</li>
+            <li>Card numbers and card data no longer appear in any log.</li>
+            <li>Balance and history tell you when a read failed instead of showing zero, and give up cleanly after 15 seconds.</li>
+            <li>Vault settings now live in app storage instead of the web view. This moves over by itself the first time you open the app, and your address does not change.</li>
+          </ul>
+        </div>
+
+        <div class="devlog-entry">
+          <div class="devlog-head">
+            <span class="devlog-ver">v1.16.0</span>
             <span class="devlog-date">July 2, 2026</span>
           </div>
           <div class="devlog-title">Give your agents an on-chain identity</div>
