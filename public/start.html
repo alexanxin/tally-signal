@@ -1450,7 +1450,7 @@
           <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
         <div class="nav-dropdown-menu">
-          <span class="nav-dropdown-item-sub" style="color: var(--green); letter-spacing: 1px; text-transform: uppercase; font-family: var(--mono); border-bottom: 1px solid var(--border-dim); padding-bottom: 9px; margin-bottom: 4px;">Latest build · v1.17.0</span>
+          <span class="nav-dropdown-item-sub" style="color: var(--green); letter-spacing: 1px; text-transform: uppercase; font-family: var(--mono); border-bottom: 1px solid var(--border-dim); padding-bottom: 9px; margin-bottom: 4px;">Latest build · v1.17.1</span>
           <a class="nav-dropdown-item" href="/api/download/android">Android APK ↓</a>
           <span class="nav-dropdown-item-sub">A contactless Visa/Mastercard, or a blank NTAG215 NFC tag.</span>
           <a class="nav-dropdown-item" href="/api/download/android-mock">Android Mock ↓</a>
@@ -1483,13 +1483,15 @@
 
   <!-- UPDATE NOTICE -->
   <div class="update-notice">
-    <span class="update-notice-tag">⚠ v1.17.0 is live</span>
+    <span class="update-notice-tag">⚠ v1.17.1 is live</span>
     <span>
       <strong>Back up your 24-word recovery phrase first.</strong> On v1.7.0 or later? This installs right over it,
       <strong>same vault, no restore needed. Do not uninstall</strong>: that deletes half of your key.
       After the update Tally asks for your own <strong>free Helius key</strong> once (make one at dashboard.helius.dev).
       <strong>Stay on the same variant</strong>: a vault made in the Mock app only opens in the Mock app.
       Private receive balances come back after <strong>Sweep all private</strong>.
+      Tally now <strong>starts on mainnet</strong>: if you never picked a network, your devnet funds are
+      still there under Settings, Network.
       Coming from a version <strong>before v1.7.0</strong>? Restore from your phrase once, and sweep older
       personal and burner wallets to your main vault before updating.
       <a href="#devlog">Details in the dev log</a>.
@@ -1757,8 +1759,23 @@
 
         <div class="devlog-entry devlog-entry-latest">
           <div class="devlog-head">
-            <span class="devlog-ver">v1.17.0</span>
+            <span class="devlog-ver">v1.17.1</span>
             <span class="devlog-latest-tag">Latest</span>
+            <span class="devlog-date">November 25, 2026</span>
+          </div>
+          <div class="devlog-title">Private balance on mainnet (beta)</div>
+          <ul class="devlog-changes">
+            <li>Private balance now works on mainnet too, as a beta. Move USDC and SOL in and out, and send privately, with real funds.</li>
+            <li>While in beta, you can move up to $250 into your private balance. Payments you receive privately can go above that.</li>
+            <li>Tally now starts on mainnet. If you never picked a network, your wallet opens on mainnet after this update. Your devnet funds are still there: switch back in Settings, Network.</li>
+            <li>Devnet and mainnet keep separate private balances. If you turned it on for devnet, turn it on once more for mainnet.</li>
+            <li>Private receive wallets keep working alongside the private balance during the beta.</li>
+          </ul>
+        </div>
+
+        <div class="devlog-entry">
+          <div class="devlog-head">
+            <span class="devlog-ver">v1.17.0</span>
             <span class="devlog-date">November 25, 2026</span>
           </div>
           <div class="devlog-title">Private balance on devnet, and a safer vault</div>
